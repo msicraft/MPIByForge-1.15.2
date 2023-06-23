@@ -6,6 +6,7 @@ import me.msicraft.mpibyforge.Command.NoDamageTick;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.Event.EntityRelated;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.ServerProperties;
 import net.minecraftforge.common.MinecraftForge;
@@ -35,6 +36,7 @@ public class MPIByForge {
     }
 
     public static FileConfig fileConfig;
+    public static String directoryPath;
 
     public MPIByForge() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setUpServer);
@@ -47,16 +49,17 @@ public class MPIByForge {
 
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        //MinecraftServer minecraftServer = event.getServer();
+        MinecraftServer minecraftServer = event.getServer();
         NoDamageTick.register(event.getCommandDispatcher());
         MinAttackPower.register(event.getCommandDispatcher());
         TeamSpawn.register(event.getCommandDispatcher());
+        EntityRelated.setVariables(minecraftServer);
         LOGGER.info("MPIByForge Enabled");
     }
 
     @SubscribeEvent
     public void onServerStopping(FMLServerStoppingEvent event) {
-        EntityRelated.saveToConfig(event.getServer());
+        EntityRelated.saveToConfig();
         LOGGER.info("MPIByForge Disabled");
     }
 
@@ -66,7 +69,7 @@ public class MPIByForge {
         String configPath = dedicatedServer.getDataDirectory().toPath().toAbsolutePath() + File.separator + serverProperties.worldName +
                 File.separator + "serverconfig" + File.separator + "mpibyforge-server.toml";
         fileConfig = FileConfig.of(configPath);
-        EntityRelated.setVariables(dedicatedServer);
+        directoryPath = dedicatedServer.getDataDirectory().toPath().toAbsolutePath().toString();
     }
 
 }

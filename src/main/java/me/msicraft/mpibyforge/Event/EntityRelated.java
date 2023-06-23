@@ -4,13 +4,13 @@ import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.MPIByForge;
 import me.msicraft.mpibyforge.a.Location;
+import me.msicraft.mpibyforge.a.TeamSpawnDataFile;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -51,16 +51,14 @@ public class EntityRelated {
     public static int getNoDamageTick() { return noDamageTick; }
     public static float getMinAttackPower() { return minAttackPower; }
 
-    public static void setVariables(DedicatedServer dedicatedServer) {
+    public static void setVariables(MinecraftServer minecraftServer) {
         setNoDamageTick(ServerConfig.NODAMAGETICK.get());
         setMinAttackPower(ServerConfig.MINATTACKPOWER.get());
-        for (String teamName : dedicatedServer.getScoreboard().getTeamNames()) {
-            if (MPIByForge.fileConfig.contains(teamName)) {
-                int x = MPIByForge.fileConfig.getInt(teamName + ".x");
-                int y = MPIByForge.fileConfig.getInt(teamName + ".y");
-                int z = MPIByForge.fileConfig.getInt(teamName + ".z");
-                Location location = new Location(x, y, z);
+        for (String teamName : minecraftServer.getScoreboard().getTeamNames()) {
+            Location location = TeamSpawnDataFile.getTeamSpawnLocation(teamName);
+            if (location != null) {
                 teamSpawnMap.put(teamName, location);
+                MPIByForge.getLogger().info("Load team: " + teamName);
             }
         }
     }
@@ -79,24 +77,17 @@ public class EntityRelated {
         minAttackPower = (float) attackPower;
     }
 
-    public static void saveToConfig(MinecraftServer minecraftServer) {
+    public static void saveToConfig() {
         MPIByForge.fileConfig.load();
         MPIByForge.fileConfig.set("NoDamageTick", getNoDamageTick());
         MPIByForge.fileConfig.save();
         MPIByForge.fileConfig.set("MinAttackPower", getMinAttackPower());
         MPIByForge.fileConfig.save();
-        for (String teamName : minecraftServer.getScoreboard().getTeamNames()) {
-            if (teamSpawnMap.containsKey(teamName)) {
-                Location location = teamSpawnMap.get(teamName);
-                int x = (int) location.getX();
-                MPIByForge.fileConfig.set(teamName + ".x", x);
-                MPIByForge.fileConfig.save();
-                int y = (int) location.getY();
-                MPIByForge.fileConfig.set(teamName + ".y", y);
-                MPIByForge.fileConfig.save();
-                int z = (int) location.getZ();
-                MPIByForge.fileConfig.set(teamName + ".z", z);
-                MPIByForge.fileConfig.save();
+        for (String teamName : teamSpawnMap.keySet()) {
+            Location location = teamSpawnMap.get(teamName);
+            if (location != null) {
+                MPIByForge.getLogger().info("Save team: " + teamName + " | " + location);
+                TeamSpawnDataFile.setTeamSpawnLocation(teamName, location);
             }
         }
     }
@@ -206,7 +197,13 @@ public class EntityRelated {
                 if (player.getBedPosition().isPresent()) {
                     return;
                 }
-                player.setPosition((location.getX()+0.5), (location.getY()+0.15), (location.getZ()+0.5));
+                MinecraftServer minecraftServer = player.getServer();
+                if (minecraftServer != null) {
+                    double x = location.getX() + 0.5;
+                    double y = location.getY() + 0.15;
+                    double z = location.getZ() + 0.5;
+                    minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.StringTextComponent;
 
 public class TeamSpawn {
@@ -43,10 +44,15 @@ public class TeamSpawn {
         if (commandSource.getEntity() instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) commandSource.getEntity();
             String teamName = getTeamName(player);
-            if (teamName != null) {
-                Location location = EntityRelated.getTeamSpawnLocation(teamName);
-                if (location != null) {
-                    player.setPosition((location.getX()+0.5), (location.getY()+0.15), (location.getZ()+0.5));
+            Location location = EntityRelated.getTeamSpawnLocation(teamName);
+            if (teamName != null && location != null) {
+                MinecraftServer minecraftServer = player.getServer();
+                if (minecraftServer != null) {
+                    double x = location.getX() + 0.5;
+                    double y = location.getY() + 0.15;
+                    double z = location.getZ() + 0.5;
+                    minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
+                    return 1;
                 }
             }
         }
@@ -63,6 +69,7 @@ public class TeamSpawn {
                 int z = player.getPosition().getZ();
                 Location location = new Location(x, y, z);
                 EntityRelated.setTeamSpawn(teamName, location);
+                return 1;
             }
         }
         return 0;
@@ -75,7 +82,7 @@ public class TeamSpawn {
             for (String teamName : scoreboard.getTeamNames()) {
                 Location location = EntityRelated.getTeamSpawnLocation(teamName);
                 if (location != null) {
-                    commandSource.sendFeedback(new StringTextComponent("Team: " + teamName + " X|Y|Z " + location.getX() + ", " +
+                    commandSource.sendFeedback(new StringTextComponent("Team: " + teamName +  " X|Y|Z " + location.getX() + ", " +
                             location.getY() + ", " + location.getZ()), false);
                 }
             }
