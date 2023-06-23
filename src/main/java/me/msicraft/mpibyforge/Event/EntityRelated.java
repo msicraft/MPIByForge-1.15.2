@@ -1,28 +1,35 @@
 package me.msicraft.mpibyforge.Event;
 
+import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.MPIByForge;
+import me.msicraft.mpibyforge.a.Location;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.BonemealEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = MPIByForge.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.DEDICATED_SERVER)
 public class EntityRelated {
@@ -30,12 +37,32 @@ public class EntityRelated {
     private static int noDamageTick = 20;
     private static float minAttackPower = 0;
 
+    private static final Map<String, Location> teamSpawnMap = new HashMap<>();
+
+    public static void setTeamSpawn(String teamName, Location location) { teamSpawnMap.put(teamName, location); }
+    public static Location getTeamSpawnLocation(String teamName) {
+        Location location = null;
+        if (teamSpawnMap.containsKey(teamName)) {
+            location = teamSpawnMap.get(teamName);
+        }
+        return location;
+    }
+
     public static int getNoDamageTick() { return noDamageTick; }
     public static float getMinAttackPower() { return minAttackPower; }
 
-    public static void init() {
+    public static void setVariables(DedicatedServer dedicatedServer) {
         setNoDamageTick(ServerConfig.NODAMAGETICK.get());
         setMinAttackPower(ServerConfig.MINATTACKPOWER.get());
+        for (String teamName : dedicatedServer.getScoreboard().getTeamNames()) {
+            if (MPIByForge.fileConfig.contains(teamName)) {
+                int x = MPIByForge.fileConfig.getInt(teamName + ".x");
+                int y = MPIByForge.fileConfig.getInt(teamName + ".y");
+                int z = MPIByForge.fileConfig.getInt(teamName + ".z");
+                Location location = new Location(x, y, z);
+                teamSpawnMap.put(teamName, location);
+            }
+        }
     }
 
     public static void setNoDamageTick(int tick) {
@@ -52,12 +79,26 @@ public class EntityRelated {
         minAttackPower = (float) attackPower;
     }
 
-    public static void saveToConfig() {
+    public static void saveToConfig(MinecraftServer minecraftServer) {
         MPIByForge.fileConfig.load();
         MPIByForge.fileConfig.set("NoDamageTick", getNoDamageTick());
         MPIByForge.fileConfig.save();
         MPIByForge.fileConfig.set("MinAttackPower", getMinAttackPower());
         MPIByForge.fileConfig.save();
+        for (String teamName : minecraftServer.getScoreboard().getTeamNames()) {
+            if (teamSpawnMap.containsKey(teamName)) {
+                Location location = teamSpawnMap.get(teamName);
+                int x = (int) location.getX();
+                MPIByForge.fileConfig.set(teamName + ".x", x);
+                MPIByForge.fileConfig.save();
+                int y = (int) location.getY();
+                MPIByForge.fileConfig.set(teamName + ".y", y);
+                MPIByForge.fileConfig.save();
+                int z = (int) location.getZ();
+                MPIByForge.fileConfig.set(teamName + ".z", z);
+                MPIByForge.fileConfig.save();
+            }
+        }
     }
 
     private static final List<DamageSource> ignoredDamageSources = Arrays.asList(DamageSource.DROWN, DamageSource.LAVA, DamageSource.HOT_FLOOR,
@@ -79,19 +120,21 @@ public class EntityRelated {
 
     @SubscribeEvent
     public static void applyGlowing(TickEvent.ServerTickEvent e) {
-        boolean check = false;
-        if (counter == 400) {
-            counter = 0;
-            check = true;
-        } else {
-            counter++;
-        }
-        if (check) {
-            MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
-            List<ServerPlayerEntity> serverPlayerEntities = minecraftServer.getPlayerList().getPlayers();
-            for (ServerPlayerEntity serverPlayerEntity : serverPlayerEntities) {
-                if (serverPlayerEntity.isAlive()) {
-                    serverPlayerEntity.setGlowing(true);
+        if (e.phase == TickEvent.Phase.END) {
+            boolean check = false;
+            if (counter == 400) {
+                counter = 0;
+                check = true;
+            } else {
+                counter++;
+            }
+            if (check) {
+                MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
+                List<ServerPlayerEntity> serverPlayerEntities = minecraftServer.getPlayerList().getPlayers();
+                for (ServerPlayerEntity serverPlayerEntity : serverPlayerEntities) {
+                    if (serverPlayerEntity.isAlive()) {
+                        serverPlayerEntity.setGlowing(true);
+                    }
                 }
             }
         }
@@ -128,8 +171,8 @@ public class EntityRelated {
                     e.setCanceled(true);
                     float a = player.getMaxHealth() * 0.7f;
                     player.setHealth(a);
-                    totemStack.shrink(1);
                     player.sendMessage(new StringTextComponent("불사의 토템이 사용되었습니다."));
+                    totemStack.shrink(1);
                 }
             }
         }
@@ -144,6 +187,28 @@ public class EntityRelated {
             return;
         }
         e.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void babySpawn(BabyEntitySpawnEvent e) {
+        if (Math.random() < 0.9) {
+            e.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void respawnPlayer(PlayerEvent.PlayerRespawnEvent e) {
+        PlayerEntity player = e.getPlayer();
+        if (player != null) {
+            String teamName = TeamSpawn.getTeamName(player);
+            Location location = getTeamSpawnLocation(teamName);
+            if (teamName != null && location != null) {
+                if (player.getBedPosition().isPresent()) {
+                    return;
+                }
+                player.setPosition((location.getX()+0.5), (location.getY()+0.15), (location.getZ()+0.5));
+            }
+        }
     }
 
 }

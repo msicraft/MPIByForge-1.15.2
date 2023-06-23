@@ -8,14 +8,17 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
 
-public class SetMinAttackPower {
-
-    private SetMinAttackPower() {}
+public class MinAttackPower {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(2))
                 .then(Commands.literal("minattackpower").then(Commands.argument("attackpower", FloatArgumentType.floatArg())
                         .executes(command -> setMinPowerAttack(command.getSource(), FloatArgumentType.getFloat(command, "attackpower"))))));
+        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(2))
+                .then(Commands.literal("minattackpower").executes(command -> {
+                    command.getSource().sendFeedback(new StringTextComponent("현재 MinAttackPower 값: " + EntityRelated.getMinAttackPower()), false);
+                    return 1;
+                })));
     }
 
     private static int setMinPowerAttack(CommandSource commandSource, float attackPower) {

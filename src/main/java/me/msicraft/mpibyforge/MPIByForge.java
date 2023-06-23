@@ -1,13 +1,11 @@
 package me.msicraft.mpibyforge;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
-import me.msicraft.mpibyforge.Command.GetMinAttackPower;
-import me.msicraft.mpibyforge.Command.GetNoDamageTick;
-import me.msicraft.mpibyforge.Command.SetMinAttackPower;
-import me.msicraft.mpibyforge.Command.SetNoDamageTick;
+import me.msicraft.mpibyforge.Command.MinAttackPower;
+import me.msicraft.mpibyforge.Command.NoDamageTick;
+import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.Event.EntityRelated;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.ServerProperties;
 import net.minecraftforge.common.MinecraftForge;
@@ -49,18 +47,16 @@ public class MPIByForge {
 
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        MinecraftServer minecraftServer = event.getServer();
-        SetNoDamageTick.register(event.getCommandDispatcher());
-        GetNoDamageTick.register(event.getCommandDispatcher());
-        SetMinAttackPower.register(event.getCommandDispatcher());
-        GetMinAttackPower.register(event.getCommandDispatcher());
-        EntityRelated.init();
+        //MinecraftServer minecraftServer = event.getServer();
+        NoDamageTick.register(event.getCommandDispatcher());
+        MinAttackPower.register(event.getCommandDispatcher());
+        TeamSpawn.register(event.getCommandDispatcher());
         LOGGER.info("MPIByForge Enabled");
     }
 
     @SubscribeEvent
     public void onServerStopping(FMLServerStoppingEvent event) {
-        EntityRelated.saveToConfig();
+        EntityRelated.saveToConfig(event.getServer());
         LOGGER.info("MPIByForge Disabled");
     }
 
@@ -70,6 +66,7 @@ public class MPIByForge {
         String configPath = dedicatedServer.getDataDirectory().toPath().toAbsolutePath() + File.separator + serverProperties.worldName +
                 File.separator + "serverconfig" + File.separator + "mpibyforge-server.toml";
         fileConfig = FileConfig.of(configPath);
+        EntityRelated.setVariables(dedicatedServer);
     }
 
 }
