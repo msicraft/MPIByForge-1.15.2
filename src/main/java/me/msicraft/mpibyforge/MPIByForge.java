@@ -1,11 +1,15 @@
 package me.msicraft.mpibyforge;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
+import com.mojang.brigadier.CommandDispatcher;
+import me.msicraft.mpibyforge.Command.MainWorldSpawn;
 import me.msicraft.mpibyforge.Command.MinAttackPower;
 import me.msicraft.mpibyforge.Command.NoDamageTick;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.Event.EntityRelated;
+import me.msicraft.mpibyforge.Event.TeamClaimRelated;
+import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.ServerProperties;
@@ -43,6 +47,7 @@ public class MPIByForge {
 
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(EntityRelated.class);
+        MinecraftForge.EVENT_BUS.register(TeamClaimRelated.class);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, "mpibyforge-server.toml");
     }
@@ -50,16 +55,20 @@ public class MPIByForge {
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
         MinecraftServer minecraftServer = event.getServer();
-        NoDamageTick.register(event.getCommandDispatcher());
-        MinAttackPower.register(event.getCommandDispatcher());
-        TeamSpawn.register(event.getCommandDispatcher());
+        CommandDispatcher<CommandSource> commandDispatcher = event.getCommandDispatcher();
+        NoDamageTick.register(commandDispatcher);
+        MinAttackPower.register(commandDispatcher);
+        TeamSpawn.register(commandDispatcher);
+        MainWorldSpawn.register(commandDispatcher);
         EntityRelated.setVariables(minecraftServer);
+        TeamClaimRelated.setVariables(minecraftServer);
         LOGGER.info("MPIByForge Enabled");
     }
 
     @SubscribeEvent
     public void onServerStopping(FMLServerStoppingEvent event) {
         EntityRelated.saveToConfig();
+        TeamClaimRelated.saveToConfig();
         LOGGER.info("MPIByForge Disabled");
     }
 

@@ -11,10 +11,10 @@ import net.minecraft.util.text.StringTextComponent;
 public class NoDamageTick {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(2))
+        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(4))
                 .then(Commands.literal("nodamagetick").then(Commands.argument("tick", IntegerArgumentType.integer())
                         .executes(command -> setNoDamageTick(command.getSource(), IntegerArgumentType.getInteger(command, "tick"))))));
-        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(2))
+        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(4))
                 .then(Commands.literal("nodamagetick").executes(command -> {
                     command.getSource().sendFeedback(new StringTextComponent("현재 NoDamageTick 값: " + EntityRelated.getNoDamageTick()), false);
                     return 1;

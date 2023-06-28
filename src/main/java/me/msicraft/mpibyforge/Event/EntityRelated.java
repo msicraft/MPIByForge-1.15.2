@@ -2,9 +2,10 @@ package me.msicraft.mpibyforge.Event;
 
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
+import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
 import me.msicraft.mpibyforge.MPIByForge;
 import me.msicraft.mpibyforge.a.Location;
-import me.msicraft.mpibyforge.a.TeamSpawnDataFile;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -12,9 +13,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -191,20 +195,32 @@ public class EntityRelated {
     public static void respawnPlayer(PlayerEvent.PlayerRespawnEvent e) {
         PlayerEntity player = e.getPlayer();
         if (player != null) {
-            String teamName = TeamSpawn.getTeamName(player);
-            Location location = getTeamSpawnLocation(teamName);
-            if (teamName != null && location != null) {
-                if (player.getBedPosition().isPresent()) {
-                    return;
-                }
-                MinecraftServer minecraftServer = player.getServer();
-                if (minecraftServer != null) {
-                    double x = location.getX() + 0.5;
-                    double y = location.getY() + 0.15;
-                    double z = location.getZ() + 0.5;
-                    minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
+            BlockPos blockPos = player.getBedLocation(DimensionType.OVERWORLD);
+            if (blockPos == null) {
+                String teamName = TeamSpawn.getTeamName(player);
+                Location location = getTeamSpawnLocation(teamName);
+                if (teamName != null && location != null) {
+                    MinecraftServer minecraftServer = player.getServer();
+                    if (minecraftServer != null) {
+                        double x = location.getX() + 0.5;
+                        double y = location.getY() + 0.15;
+                        double z = location.getZ() + 0.5;
+                        minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
+                    }
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void vehicleRiding(EntityMountEvent e) {
+        Entity entity = e.getEntityBeingMounted();
+        if (entity != null) {
+            Entity playerEntity = e.getEntityMounting();
+            if (playerEntity instanceof PlayerEntity) {
+                return;
+            }
+            e.setCanceled(true);
         }
     }
 

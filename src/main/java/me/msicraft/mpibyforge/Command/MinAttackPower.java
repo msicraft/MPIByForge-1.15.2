@@ -11,10 +11,10 @@ import net.minecraft.util.text.StringTextComponent;
 public class MinAttackPower {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(2))
+        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(4))
                 .then(Commands.literal("minattackpower").then(Commands.argument("attackpower", FloatArgumentType.floatArg())
                         .executes(command -> setMinPowerAttack(command.getSource(), FloatArgumentType.getFloat(command, "attackpower"))))));
-        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(2))
+        dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(4))
                 .then(Commands.literal("minattackpower").executes(command -> {
                     command.getSource().sendFeedback(new StringTextComponent("현재 MinAttackPower 값: " + EntityRelated.getMinAttackPower()), false);
                     return 1;
