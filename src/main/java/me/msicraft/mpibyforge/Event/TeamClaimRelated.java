@@ -80,12 +80,12 @@ public class TeamClaimRelated {
                 long time = System.currentTimeMillis();
                 if (disableMessageMap.containsKey(uuid)) {
                     if (disableMessageMap.get(uuid) > time) {
-                        player.sendMessage(new StringTextComponent("이곳은 다른 팀의 지역입니다."));
                         return;
                     }
                 }
                 long cd = (long) (time + (messageCoolDown * 1000));
                 disableMessageMap.put(uuid, cd);
+                player.sendMessage(new StringTextComponent("이곳은 다른 팀의 지역입니다."));
             }
         }
     }
