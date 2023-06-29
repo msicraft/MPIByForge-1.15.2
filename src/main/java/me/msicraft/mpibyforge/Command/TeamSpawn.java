@@ -9,6 +9,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.StringTextComponent;
@@ -36,6 +37,11 @@ public class TeamSpawn {
 
     public static String getTeamName(PlayerEntity player) {
         String teamName = null;
+        Team team = player.getTeam();
+        if (team != null) {
+            teamName = team.getName();
+        }
+        /*
         Scoreboard scoreboard = player.getWorldScoreboard();
         a1:
         for (String t : scoreboard.getTeamNames()) {
@@ -46,6 +52,8 @@ public class TeamSpawn {
                 }
             }
         }
+
+         */
         return teamName;
     }
 
@@ -75,20 +83,16 @@ public class TeamSpawn {
     public static int spawnTeam(CommandSource commandSource, String teamName) {
         if (commandSource.getEntity() instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) commandSource.getEntity();
-            if (player.getEntityWorld().getDimension().getType() == DimensionType.OVERWORLD) {
-                Location location = EntityRelated.getTeamSpawnLocation(teamName);
-                if (location != null) {
-                    MinecraftServer minecraftServer = player.getServer();
-                    if (minecraftServer != null) {
-                        double x = location.getX() + 0.5;
-                        double y = location.getY() + 0.15;
-                        double z = location.getZ() + 0.5;
-                        minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
-                        return 1;
-                    }
+            Location location = EntityRelated.getTeamSpawnLocation(teamName);
+            if (location != null) {
+                MinecraftServer minecraftServer = player.getServer();
+                if (minecraftServer != null) {
+                    double x = location.getX() + 0.5;
+                    double y = location.getY() + 0.15;
+                    double z = location.getZ() + 0.5;
+                    minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
+                    return 1;
                 }
-            } else {
-                player.sendMessage(new StringTextComponent("차원 간 이동은 불가능 합니다"));
             }
         }
         return 0;

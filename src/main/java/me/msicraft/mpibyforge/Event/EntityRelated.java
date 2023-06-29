@@ -1,5 +1,6 @@
 package me.msicraft.mpibyforge.Event;
 
+import com.robertx22.mine_and_slash.uncommon.datasaving.Load;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
@@ -13,8 +14,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -27,6 +30,7 @@ import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
@@ -222,6 +226,37 @@ public class EntityRelated {
             }
             e.setCanceled(true);
         }
+    }
+
+    private static int levelTickCount = 0;
+    @SubscribeEvent
+    public static void displayLevel(TickEvent.PlayerTickEvent e) {
+        if (e.side == LogicalSide.SERVER && e.phase == TickEvent.Phase.END) {
+            boolean check = false;
+            if (levelTickCount == 600) {
+                levelTickCount = 0;
+                check = true;
+            } else {
+                levelTickCount++;
+            }
+            if (check) {
+                PlayerEntity player = e.player;
+                player.refreshDisplayName();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void changeDisplayName(PlayerEvent.NameFormat e) {
+        PlayerEntity player = e.getPlayer();
+        int level = Load.Unit(player).getLevel();
+        ResourceLocation resourceLocation = player.getEntityWorld().getDimension().getType().getRegistryName();
+        String dimensionName = "Unknown";
+        if (resourceLocation != null) {
+            dimensionName = resourceLocation.getPath();
+        }
+        String s = TextFormatting.GRAY + "[" + dimensionName + "]" + "[" + level + "] " + TextFormatting.WHITE + player.getName().getString();
+        e.setDisplaynameComponent(new StringTextComponent(s));
     }
 
 }
