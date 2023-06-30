@@ -1,5 +1,6 @@
 package me.msicraft.mpibyforge.Event;
 
+import com.robertx22.mine_and_slash.api.MineAndSlashEvents;
 import com.robertx22.mine_and_slash.uncommon.datasaving.Load;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
@@ -8,6 +9,7 @@ import me.msicraft.mpibyforge.MPIByForge;
 import me.msicraft.mpibyforge.a.Location;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -34,10 +36,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Mod.EventBusSubscriber(modid = MPIByForge.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.DEDICATED_SERVER)
 public class EntityRelated {
@@ -258,6 +257,16 @@ public class EntityRelated {
         }
         String s = TextFormatting.GRAY + "[" + dimensionName + "]" + "[" + level + "] " + TextFormatting.WHITE + player.getName().getString();
         e.setDisplaynameComponent(new StringTextComponent(s));
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void disableVillageDamage(MineAndSlashEvents.OnDmgDoneEvent e) {
+        if (e.data.target instanceof VillagerEntity) {
+            Set<String> tags = e.data.target.getTags();
+            if (tags.contains("shop")) {
+                e.data.damageMultiplier = 0;
+            }
+        }
     }
 
 }
