@@ -195,21 +195,22 @@ public class EntityRelated {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void respawnPlayer(PlayerEvent.PlayerRespawnEvent e) {
         PlayerEntity player = e.getPlayer();
         if (player != null) {
-            BlockPos blockPos = player.getBedLocation(DimensionType.OVERWORLD);
-            if (blockPos == null) {
-                String teamName = TeamSpawn.getTeamName(player);
-                Location location = getTeamSpawnLocation(teamName);
-                if (teamName != null && location != null) {
-                    MinecraftServer minecraftServer = player.getServer();
-                    if (minecraftServer != null) {
+            MinecraftServer minecraftServer = player.getServer();
+            if (minecraftServer != null) {
+                BlockPos blockPos = player.getBedLocation(DimensionType.OVERWORLD);
+                if (blockPos == null) {
+                    String teamName = TeamSpawn.getTeamName(player);
+                    Location location = getTeamSpawnLocation(teamName);
+                    if (teamName != null && location != null) {
                         double x = location.getX() + 0.5;
                         double y = location.getY() + 0.15;
                         double z = location.getZ() + 0.5;
                         minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
+                        return;
                     }
                 }
             }
