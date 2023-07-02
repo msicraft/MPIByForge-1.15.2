@@ -1,6 +1,5 @@
 package me.msicraft.mpibyforge.Event;
 
-import com.robertx22.mine_and_slash.api.MineAndSlashEvents;
 import com.robertx22.mine_and_slash.config.whole_mod_entity_configs.ModEntityConfig;
 import com.robertx22.mine_and_slash.mmorpg.registers.common.CriteriaRegisters;
 import com.robertx22.mine_and_slash.registry.SlashRegistry;
@@ -15,7 +14,6 @@ import me.msicraft.mpibyforge.a.Location;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
@@ -44,7 +42,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = MPIByForge.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.DEDICATED_SERVER)
 public class EntityRelated {
@@ -137,12 +138,10 @@ public class EntityRelated {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void changeNoDamageTick(LivingHurtEvent e) {
-        if (!e.isCanceled()) {
-            LivingEntity livingEntity = e.getEntityLiving();
-            DamageSource damageSource = e.getSource();
-            if (!ignoredDamageSources.contains(damageSource)) {
-                livingEntity.hurtResistantTime = noDamageTick;
-            }
+        LivingEntity livingEntity = e.getEntityLiving();
+        DamageSource damageSource = e.getSource();
+        if (!ignoredDamageSources.contains(damageSource)) {
+            livingEntity.hurtResistantTime = noDamageTick;
         }
     }
 
@@ -262,7 +261,7 @@ public class EntityRelated {
 
     private static int levelTickCount = 0;
     @SubscribeEvent
-    public static void displayLevel(TickEvent.PlayerTickEvent e) {
+    public static void playerTick(TickEvent.PlayerTickEvent e) {
         if (e.side == LogicalSide.SERVER && e.phase == TickEvent.Phase.END) {
             boolean check = false;
             if (levelTickCount == 600) {
@@ -291,6 +290,7 @@ public class EntityRelated {
         e.setDisplaynameComponent(new StringTextComponent(s));
     }
 
+    /*
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void disableVillageDamage(MineAndSlashEvents.OnDmgDoneEvent e) {
         if (e.data.target instanceof VillagerEntity) {
@@ -300,6 +300,7 @@ public class EntityRelated {
             }
         }
     }
+     */
 
     private static ItemStack getPumpkinJuiceItemStack() {
         ItemStack itemStack = null;
@@ -342,10 +343,21 @@ public class EntityRelated {
                             int mobLevel = mobKilledData.getLevel();
                             int playerLevel = playerData.getLevel();
                             int absLevelValue = Math.abs(mobLevel - playerLevel);
+                            MinecraftServer minecraftServer = player.getServer();
+                            ServerPlayerEntity developerPlayer = null;
+                            if (minecraftServer != null) {
+                                ServerPlayerEntity developerEntity = getDeveloperPlayer(minecraftServer);
+                                if (developerEntity != null) {
+                                    developerPlayer = developerEntity;
+                                }
+                            }
                             if (absLevelValue > getPumpkinJuiceDropLevelRange()) {
+                                MPIByForge.getLogger().info("레벨 페널티로인해 호박주스 드랍 실패: " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString());
+                                if (developerPlayer != null) {
+                                    developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "레벨 페널티로인해 호박주스 드랍 실패: " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString()));
+                                }
                                 return;
                             }
-
                             CriteriaRegisters.DROP_LVL_PENALTY_TRIGGER.trigger(player, playerData, mobKilledData);
 
                             CriteriaRegisters.KILL_RARITY_MOB_TRIGGE.trigger(player, mobKilledData);
@@ -365,12 +377,8 @@ public class EntityRelated {
                                 item.setLocationAndAngles(blockPos.getX(), blockPos.getY()+0.25, blockPos.getZ(), 0.0F, 0.0F);
                                 check = player.world.addEntity(item);
                             }
-                            MinecraftServer minecraftServer = player.getServer();
-                            if (minecraftServer != null) {
-                                ServerPlayerEntity developerEntity = getDeveloperPlayer(minecraftServer);
-                                if (developerEntity != null) {
-                                    developerEntity.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString()));
-                                }
+                            if (developerPlayer != null) {
+                                developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString()));
                             }
                             MPIByForge.getLogger().info("호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString());
                         }
