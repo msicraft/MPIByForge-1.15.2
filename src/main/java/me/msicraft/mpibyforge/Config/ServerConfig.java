@@ -15,7 +15,7 @@ public class ServerConfig {
     static {
         NODAMAGETICK = BUILDER.define("NoDamageTick", 20);
         MINATTACKPOWER = BUILDER.define("MinAttackPower", 0.0);
-        PUMPKINJUICEDROPRATE = BUILDER.define("PumpkinJuiceDropRate", 0.000001);
+        PUMPKINJUICEDROPRATE = BUILDER.define("PumpkinJuiceDropRate", 0.00001);
         PUMPKINJUICEDROPLEVELRANGE = BUILDER.define("PumpkinJuiceDropLevelRange", 10);
         SPEC = BUILDER.build();
     }

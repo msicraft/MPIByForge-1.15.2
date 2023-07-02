@@ -52,7 +52,7 @@ public class EntityRelated {
 
     private static int noDamageTick = 20;
     private static float minAttackPower = 0;
-    private static double pumpkinJuiceDropRate = 0.000001;
+    private static double pumpkinJuiceDropRate = 0.00001;
     private static int pumpkinJuiceDropLevelRange = 10;
 
     private static final Map<String, Location> teamSpawnMap = new HashMap<>();
@@ -325,7 +325,10 @@ public class EntityRelated {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void dropPumpkinJuice(LivingDeathEvent e) {
-        if (Math.random() < getPumpkinJuiceDropRate()) {
+        boolean dropSuccess = false;
+        double randomP = Math.random();
+        if (randomP < getPumpkinJuiceDropRate()) {
+            dropSuccess = true;
             LivingEntity mobKilled = e.getEntityLiving();
             if (mobKilled.world.isRemote) {
                 return;
@@ -352,9 +355,9 @@ public class EntityRelated {
                                 }
                             }
                             if (absLevelValue > getPumpkinJuiceDropLevelRange()) {
-                                MPIByForge.getLogger().info("레벨 페널티로인해 호박주스 드랍 실패: " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString());
+                                MPIByForge.getLogger().info("레벨 페널티로인해 호박주스 드랍 실패: " + pumpkinJuiceDropRate + " | " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString());
                                 if (developerPlayer != null) {
-                                    developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "레벨 페널티로인해 호박주스 드랍 실패: " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString()));
+                                    developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "레벨 페널티로인해 호박주스 드랍 실패: " + pumpkinJuiceDropRate + " | " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString()));
                                 }
                                 return;
                             }
@@ -386,6 +389,7 @@ public class EntityRelated {
                 }
             }
         }
+        MPIByForge.getLogger().info("호박 주스 드랍: " + dropSuccess + " | " + getPumpkinJuiceDropRate() + " | " + randomP);
     }
 
 }

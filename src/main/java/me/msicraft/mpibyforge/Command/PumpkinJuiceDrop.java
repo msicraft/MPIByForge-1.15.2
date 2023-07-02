@@ -46,7 +46,7 @@ public class PumpkinJuiceDrop {
             return 0;
         }
         MPIByForge.getLogger().info("Pumpkinjuice drop level range 값이 변경되었습니다. " + EntityRelated.getPumpkinJuiceDropLevelRange() + " -> " + range);
-        EntityRelated.setPumpkinJuiceDropRate(range);
+        EntityRelated.setPumpkinJuiceDropLevelRange(range);
         return 1;
     }
 
