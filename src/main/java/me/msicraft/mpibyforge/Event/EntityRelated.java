@@ -325,10 +325,8 @@ public class EntityRelated {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void dropPumpkinJuice(LivingDeathEvent e) {
-        boolean dropSuccess = false;
         double randomP = Math.random();
         if (randomP < getPumpkinJuiceDropRate()) {
-            dropSuccess = true;
             LivingEntity mobKilled = e.getEntityLiving();
             if (mobKilled.world.isRemote) {
                 return;
@@ -389,7 +387,6 @@ public class EntityRelated {
                 }
             }
         }
-        MPIByForge.getLogger().info("호박 주스 드랍: " + dropSuccess + " | " + getPumpkinJuiceDropRate() + " | " + randomP);
     }
 
 }
