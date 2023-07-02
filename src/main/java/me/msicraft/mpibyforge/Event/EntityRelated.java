@@ -1,6 +1,11 @@
 package me.msicraft.mpibyforge.Event;
 
 import com.robertx22.mine_and_slash.api.MineAndSlashEvents;
+import com.robertx22.mine_and_slash.config.whole_mod_entity_configs.ModEntityConfig;
+import com.robertx22.mine_and_slash.mmorpg.registers.common.CriteriaRegisters;
+import com.robertx22.mine_and_slash.registry.SlashRegistry;
+import com.robertx22.mine_and_slash.uncommon.capability.entity.EntityCap;
+import com.robertx22.mine_and_slash.uncommon.capability.world.AntiMobFarmCap;
 import com.robertx22.mine_and_slash.uncommon.datasaving.Load;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
@@ -9,9 +14,11 @@ import me.msicraft.mpibyforge.MPIByForge;
 import me.msicraft.mpibyforge.a.Location;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
@@ -35,6 +42,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 
@@ -43,6 +51,8 @@ public class EntityRelated {
 
     private static int noDamageTick = 20;
     private static float minAttackPower = 0;
+    private static double pumpkinJuiceDropRate = 0.000001;
+    private static int pumpkinJuiceDropLevelRange = 10;
 
     private static final Map<String, Location> teamSpawnMap = new HashMap<>();
 
@@ -57,10 +67,14 @@ public class EntityRelated {
 
     public static int getNoDamageTick() { return noDamageTick; }
     public static float getMinAttackPower() { return minAttackPower; }
+    public static double getPumpkinJuiceDropRate() { return pumpkinJuiceDropRate; }
+    public static int getPumpkinJuiceDropLevelRange() { return pumpkinJuiceDropLevelRange; }
 
     public static void setVariables(MinecraftServer minecraftServer) {
         setNoDamageTick(ServerConfig.NODAMAGETICK.get());
         setMinAttackPower(ServerConfig.MINATTACKPOWER.get());
+        setPumpkinJuiceDropRate(ServerConfig.PUMPKINJUICEDROPRATE.get());
+        setPumpkinJuiceDropLevelRange(ServerConfig.PUMPKINJUICEDROPLEVELRANGE.get());
         for (String teamName : minecraftServer.getScoreboard().getTeamNames()) {
             Location location = TeamSpawnDataFile.getTeamSpawnLocation(teamName);
             if (location != null) {
@@ -84,11 +98,29 @@ public class EntityRelated {
         minAttackPower = (float) attackPower;
     }
 
+    public static void setPumpkinJuiceDropRate(double dropRate) {
+        if (dropRate < 0) {
+            dropRate = 0;
+        }
+        pumpkinJuiceDropRate = dropRate;
+    }
+
+    public static void setPumpkinJuiceDropLevelRange(int range) {
+        if (range < 0) {
+            range = 0;
+        }
+        pumpkinJuiceDropLevelRange = range;
+    }
+
     public static void saveToConfig() {
         MPIByForge.fileConfig.load();
         MPIByForge.fileConfig.set("NoDamageTick", getNoDamageTick());
         MPIByForge.fileConfig.save();
         MPIByForge.fileConfig.set("MinAttackPower", getMinAttackPower());
+        MPIByForge.fileConfig.save();
+        MPIByForge.fileConfig.set("PumpkinJuiceDropRate", getPumpkinJuiceDropRate());
+        MPIByForge.fileConfig.save();
+        MPIByForge.fileConfig.set("PumpkinJuiceDropLevelRange", getPumpkinJuiceDropLevelRange());
         MPIByForge.fileConfig.save();
         for (String teamName : teamSpawnMap.keySet()) {
             Location location = teamSpawnMap.get(teamName);
@@ -169,7 +201,7 @@ public class EntityRelated {
                     e.setCanceled(true);
                     float a = player.getMaxHealth() * 0.7f;
                     player.setHealth(a);
-                    player.sendMessage(new StringTextComponent("불사의 토템이 사용되었습니다."));
+                    player.sendMessage(new StringTextComponent( TextFormatting.BOLD + "" + TextFormatting.RED + "불사의 토템이 사용되었습니다."));
                     totemStack.shrink(1);
                 }
             }
@@ -265,6 +297,85 @@ public class EntityRelated {
             Set<String> tags = e.data.target.getTags();
             if (tags.contains("shop")) {
                 e.data.damageMultiplier = 0;
+            }
+        }
+    }
+
+    private static ItemStack getPumpkinJuiceItemStack() {
+        ItemStack itemStack = null;
+        //PumpkinJuiceItem pumpkinJuiceItem = new PumpkinJuiceItem();
+        ResourceLocation resourceLocation = new ResourceLocation("mmorpg:events/pumpkin_juice");
+        Item pumpkinJuice = ForgeRegistries.ITEMS.getValue(resourceLocation);
+        if (pumpkinJuice != null) {
+            itemStack = new ItemStack(pumpkinJuice);
+        }
+        return itemStack;
+    }
+
+    private static ServerPlayerEntity getDeveloperPlayer(MinecraftServer minecraftServer) {
+        ServerPlayerEntity player = null;
+        for (ServerPlayerEntity serverPlayerEntity : minecraftServer.getPlayerList().getPlayers()) {
+            if (serverPlayerEntity.getName().getString().equals("msicraftz") || serverPlayerEntity.getUniqueID().toString().equals("67bfaabc-6d16-4ad7-90f7-177697c05cee")) {
+                player = serverPlayerEntity;
+            }
+        }
+        return player;
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void dropPumpkinJuice(LivingDeathEvent e) {
+        if (Math.random() < getPumpkinJuiceDropRate()) {
+            LivingEntity mobKilled = e.getEntityLiving();
+            if (mobKilled.world.isRemote) {
+                return;
+            }
+            if (!(mobKilled instanceof PlayerEntity)) {
+                ItemStack itemStack = getPumpkinJuiceItemStack();
+                if (itemStack != null) {
+                    if (Load.hasUnit(mobKilled)) {
+                        EntityCap.UnitData mobKilledData = Load.Unit(mobKilled);
+                        Entity killerEntity = mobKilledData.getHighestDamageEntity(mobKilled);
+                        if (killerEntity instanceof ServerPlayerEntity) {
+                            ServerPlayerEntity player = (ServerPlayerEntity) killerEntity;
+                            EntityCap.UnitData playerData = Load.Unit(player);
+
+                            int mobLevel = mobKilledData.getLevel();
+                            int playerLevel = playerData.getLevel();
+                            int absLevelValue = Math.abs(mobLevel - playerLevel);
+                            if (absLevelValue > getPumpkinJuiceDropLevelRange()) {
+                                return;
+                            }
+
+                            CriteriaRegisters.DROP_LVL_PENALTY_TRIGGER.trigger(player, playerData, mobKilledData);
+
+                            CriteriaRegisters.KILL_RARITY_MOB_TRIGGE.trigger(player, mobKilledData);
+
+                            ModEntityConfig config = SlashRegistry.getEntityConfig(mobKilled, mobKilledData);
+
+                            float loot_multi = (float) config.LOOT_MULTI;
+
+                            if (loot_multi > 0) {
+                                player.world.getCapability(AntiMobFarmCap.Data)
+                                        .ifPresent(x -> x.onValidMobDeathByPlayer(mobKilled));
+                            }
+                            boolean check = false;
+                            if (loot_multi > 0) {
+                                BlockPos blockPos = mobKilled.getPosition();
+                                ItemEntity item = new ItemEntity(player.world, blockPos.getX(), (blockPos.getY()+0.25), blockPos.getZ(), itemStack);
+                                item.setLocationAndAngles(blockPos.getX(), blockPos.getY()+0.25, blockPos.getZ(), 0.0F, 0.0F);
+                                check = player.world.addEntity(item);
+                            }
+                            MinecraftServer minecraftServer = player.getServer();
+                            if (minecraftServer != null) {
+                                ServerPlayerEntity developerEntity = getDeveloperPlayer(minecraftServer);
+                                if (developerEntity != null) {
+                                    developerEntity.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString()));
+                                }
+                            }
+                            MPIByForge.getLogger().info("호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString());
+                        }
+                    }
+                }
             }
         }
     }

@@ -2,10 +2,7 @@ package me.msicraft.mpibyforge;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.mojang.brigadier.CommandDispatcher;
-import me.msicraft.mpibyforge.Command.MainWorldSpawn;
-import me.msicraft.mpibyforge.Command.MinAttackPower;
-import me.msicraft.mpibyforge.Command.NoDamageTick;
-import me.msicraft.mpibyforge.Command.TeamSpawn;
+import me.msicraft.mpibyforge.Command.*;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.Event.EntityRelated;
 import me.msicraft.mpibyforge.Event.TeamClaimRelated;
@@ -60,6 +57,8 @@ public class MPIByForge {
         MinAttackPower.register(commandDispatcher);
         TeamSpawn.register(commandDispatcher);
         MainWorldSpawn.register(commandDispatcher);
+        PumpkinJuiceDrop.register(commandDispatcher);
+
         EntityRelated.setVariables(minecraftServer);
         TeamClaimRelated.setVariables(minecraftServer);
         LOGGER.info("MPIByForge Enabled");

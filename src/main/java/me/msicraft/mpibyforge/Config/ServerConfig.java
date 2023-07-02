@@ -9,10 +9,14 @@ public class ServerConfig {
 
     public static final ForgeConfigSpec.ConfigValue<Integer> NODAMAGETICK;
     public static final ForgeConfigSpec.ConfigValue<Double> MINATTACKPOWER;
+    public static final ForgeConfigSpec.ConfigValue<Double> PUMPKINJUICEDROPRATE;
+    public static final ForgeConfigSpec.ConfigValue<Integer> PUMPKINJUICEDROPLEVELRANGE;
 
     static {
         NODAMAGETICK = BUILDER.define("NoDamageTick", 20);
         MINATTACKPOWER = BUILDER.define("MinAttackPower", 0.0);
+        PUMPKINJUICEDROPRATE = BUILDER.define("PumpkinJuiceDropRate", 0.000001);
+        PUMPKINJUICEDROPLEVELRANGE = BUILDER.define("PumpkinJuiceDropLevelRange", 10);
         SPEC = BUILDER.build();
     }
 
