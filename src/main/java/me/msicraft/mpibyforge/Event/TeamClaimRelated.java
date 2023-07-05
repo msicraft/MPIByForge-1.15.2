@@ -5,11 +5,15 @@ import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
 import me.msicraft.mpibyforge.MPIByForge;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.Explosion;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -20,9 +24,22 @@ public class TeamClaimRelated {
 
     private static final Map<UUID, Long> disableMessageMap = new HashMap<>();
     private static final Map<String, List<ChunkPos>> teamClaimMap = new HashMap<>();
+    private static final List<ChunkPos> allTeamChunks = new ArrayList<>();
+
+    public static void updateAllTeamChunks(String teamName) {
+        if (teamClaimMap.containsKey(teamName)) {
+            List<ChunkPos> list = teamClaimMap.get(teamName);
+            allTeamChunks.addAll(list);
+        }
+    }
+
+    public static void updateAllTeamChunks(List<ChunkPos> chunkPosList) {
+        allTeamChunks.addAll(chunkPosList);
+    }
 
     public static void setTeamClaimToMap(String teamName, List<ChunkPos> chunkPosList) {
         teamClaimMap.put(teamName, chunkPosList);
+        updateAllTeamChunks(chunkPosList);
     }
 
     public static List<ChunkPos> getTeamClaimChunks(String teamName) {
@@ -87,6 +104,16 @@ public class TeamClaimRelated {
                 disableMessageMap.put(uuid, cd);
                 player.sendMessage(new StringTextComponent("이곳은 다른 팀의 지역입니다."));
             }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void preventExplode(ExplosionEvent.Start e) {
+        Explosion explosion = e.getExplosion();
+        ChunkPos chunkPos = new ChunkPos(new BlockPos(explosion.getPosition()));
+        if (allTeamChunks.contains(chunkPos)) {
+            e.setCanceled(true);
+           // e.setResult(Event.Result.DENY);
         }
     }
 

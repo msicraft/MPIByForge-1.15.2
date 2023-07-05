@@ -116,6 +116,8 @@ public class TeamSpawn {
         return 0;
     }
 
+    private static final int radius = 3;
+
     private static List<ChunkPos> getSpawnClaims(CommandSource commandSource) {
         List<ChunkPos> claims = new ArrayList<>();
         if (commandSource.getEntity() instanceof PlayerEntity) {
@@ -123,8 +125,8 @@ public class TeamSpawn {
             ChunkPos chunkPos = player.getEntityWorld().getChunkAt(player.getPosition()).getPos();
             int x = chunkPos.x;
             int z = chunkPos.z;
-            for (int a = (x-2); a<(x+2); a++) {
-                for (int b = (z-2); b<(z+2); b++) {
+            for (int a = (x-radius); a<(x+radius); a++) {
+                for (int b = (z-radius); b<(z+radius); b++) {
                     ChunkPos pos = new ChunkPos(a, b);
                     claims.add(pos);
                 }

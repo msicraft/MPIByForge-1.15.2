@@ -10,13 +10,14 @@ import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
 import me.msicraft.mpibyforge.MPIByForge;
+import me.msicraft.mpibyforge.Util.MineAndSlashUtil;
+import me.msicraft.mpibyforge.Util.Util;
 import me.msicraft.mpibyforge.a.Location;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
@@ -40,7 +41,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -151,7 +151,7 @@ public class EntityRelated {
     public static void applyGlowing(TickEvent.ServerTickEvent e) {
         if (e.phase == TickEvent.Phase.END) {
             boolean check = false;
-            if (counter == 400) {
+            if (counter == 600) {
                 counter = 0;
                 check = true;
             } else {
@@ -264,7 +264,7 @@ public class EntityRelated {
     public static void playerTick(TickEvent.PlayerTickEvent e) {
         if (e.side == LogicalSide.SERVER && e.phase == TickEvent.Phase.END) {
             boolean check = false;
-            if (levelTickCount == 600) {
+            if (levelTickCount == 300) {
                 levelTickCount = 0;
                 check = true;
             } else {
@@ -290,39 +290,6 @@ public class EntityRelated {
         e.setDisplaynameComponent(new StringTextComponent(s));
     }
 
-    /*
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void disableVillageDamage(MineAndSlashEvents.OnDmgDoneEvent e) {
-        if (e.data.target instanceof VillagerEntity) {
-            Set<String> tags = e.data.target.getTags();
-            if (tags.contains("shop")) {
-                e.data.damageMultiplier = 0;
-            }
-        }
-    }
-     */
-
-    private static ItemStack getPumpkinJuiceItemStack() {
-        ItemStack itemStack = null;
-        //PumpkinJuiceItem pumpkinJuiceItem = new PumpkinJuiceItem();
-        ResourceLocation resourceLocation = new ResourceLocation("mmorpg:events/pumpkin_juice");
-        Item pumpkinJuice = ForgeRegistries.ITEMS.getValue(resourceLocation);
-        if (pumpkinJuice != null) {
-            itemStack = new ItemStack(pumpkinJuice);
-        }
-        return itemStack;
-    }
-
-    private static ServerPlayerEntity getDeveloperPlayer(MinecraftServer minecraftServer) {
-        ServerPlayerEntity player = null;
-        for (ServerPlayerEntity serverPlayerEntity : minecraftServer.getPlayerList().getPlayers()) {
-            if (serverPlayerEntity.getName().getString().equals("msicraftz") || serverPlayerEntity.getUniqueID().toString().equals("67bfaabc-6d16-4ad7-90f7-177697c05cee")) {
-                player = serverPlayerEntity;
-            }
-        }
-        return player;
-    }
-
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void dropPumpkinJuice(LivingDeathEvent e) {
         double randomP = Math.random();
@@ -332,7 +299,7 @@ public class EntityRelated {
                 return;
             }
             if (!(mobKilled instanceof PlayerEntity)) {
-                ItemStack itemStack = getPumpkinJuiceItemStack();
+                ItemStack itemStack = MineAndSlashUtil.getPumpkinJuiceItemStack();
                 if (itemStack != null) {
                     if (Load.hasUnit(mobKilled)) {
                         EntityCap.UnitData mobKilledData = Load.Unit(mobKilled);
@@ -347,7 +314,7 @@ public class EntityRelated {
                             MinecraftServer minecraftServer = player.getServer();
                             ServerPlayerEntity developerPlayer = null;
                             if (minecraftServer != null) {
-                                ServerPlayerEntity developerEntity = getDeveloperPlayer(minecraftServer);
+                                ServerPlayerEntity developerEntity = Util.getDeveloperPlayer(minecraftServer);
                                 if (developerEntity != null) {
                                     developerPlayer = developerEntity;
                                 }
