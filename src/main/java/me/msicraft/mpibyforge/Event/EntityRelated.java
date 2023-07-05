@@ -23,6 +23,7 @@ import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -202,6 +203,7 @@ public class EntityRelated {
                     player.setHealth(a);
                     player.sendMessage(new StringTextComponent( TextFormatting.BOLD + "" + TextFormatting.RED + "불사의 토템이 사용되었습니다."));
                     totemStack.shrink(1);
+                    Util.playSound(player.world, player, SoundEvents.ITEM_TOTEM_USE);
                 }
             }
         }

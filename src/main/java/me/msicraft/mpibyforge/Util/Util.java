@@ -1,7 +1,11 @@
 package me.msicraft.mpibyforge.Util;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.world.World;
 
 public class Util {
 
@@ -13,6 +17,14 @@ public class Util {
             }
         }
         return player;
+    }
+
+    public static void playSound(World world, PlayerEntity player, SoundEvent soundEvent) {
+        if (world.isRemote) {
+            world.playSound(player, player.getPosition(), soundEvent, SoundCategory.PLAYERS, 0.5F, 1);
+        } else {
+            world.playSound(null, player.getPosition(), soundEvent, SoundCategory.PLAYERS, 0.5F, 1);
+        }
     }
 
 }
