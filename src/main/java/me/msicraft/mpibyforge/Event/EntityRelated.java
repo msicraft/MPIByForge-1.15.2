@@ -33,6 +33,7 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -364,6 +365,14 @@ public class EntityRelated {
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void disableDimensionChangeIgnorePlayer(EntityTravelToDimensionEvent e) {
+        if (e.getEntity() instanceof PlayerEntity) {
+            return;
+        }
+        e.setCanceled(true);
     }
 
 }
