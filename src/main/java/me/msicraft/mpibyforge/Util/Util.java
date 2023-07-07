@@ -12,11 +12,20 @@ public class Util {
     public static ServerPlayerEntity getDeveloperPlayer(MinecraftServer minecraftServer) {
         ServerPlayerEntity player = null;
         for (ServerPlayerEntity serverPlayerEntity : minecraftServer.getPlayerList().getPlayers()) {
-            if (serverPlayerEntity.getName().getString().equals("msicraftz") || serverPlayerEntity.getUniqueID().toString().equals("67bfaabc-6d16-4ad7-90f7-177697c05cee")) {
+            if (serverPlayerEntity.getUniqueID().toString().equals("67bfaabc-6d16-4ad7-90f7-177697c05cee")) {
                 player = serverPlayerEntity;
+                break;
             }
         }
         return player;
+    }
+
+    public static boolean isDeveloperPlayer(PlayerEntity player) {
+        boolean check = false;
+        if (player.getUniqueID().toString().equals("67bfaabc-6d16-4ad7-90f7-177697c05cee")) {
+            check = true;
+        }
+        return check;
     }
 
     public static void playSound(World world, PlayerEntity player, SoundEvent soundEvent) {

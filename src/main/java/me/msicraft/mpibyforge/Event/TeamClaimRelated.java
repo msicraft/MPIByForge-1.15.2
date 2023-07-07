@@ -3,6 +3,7 @@ package me.msicraft.mpibyforge.Event;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
 import me.msicraft.mpibyforge.MPIByForge;
+import me.msicraft.mpibyforge.Util.Util;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -91,6 +92,9 @@ public class TeamClaimRelated {
             PlayerEntity player = (PlayerEntity) e.getEntityLiving();
             ChunkPos blockChunkPos = player.getEntityWorld().getChunk(e.getPos()).getPos();
             if (inOtherTeamClaim(player, blockChunkPos)) {
+                if (Util.isDeveloperPlayer(player)) {
+                    return;
+                }
                 e.setCanceled(true);
                 e.setResult(Event.Result.DENY);
                 UUID uuid = player.getUniqueID();
