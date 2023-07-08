@@ -6,6 +6,7 @@ import me.msicraft.mpibyforge.Command.*;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.Event.EntityRelated;
 import me.msicraft.mpibyforge.Event.TeamClaimRelated;
+import me.msicraft.mpibyforge.Event.TickRelated;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
@@ -45,6 +46,7 @@ public class MPIByForge {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(EntityRelated.class);
         MinecraftForge.EVENT_BUS.register(TeamClaimRelated.class);
+        MinecraftForge.EVENT_BUS.register(TickRelated.class);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, "mpibyforge-server.toml");
     }

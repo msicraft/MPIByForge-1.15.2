@@ -31,7 +31,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
@@ -42,9 +41,7 @@ import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -149,30 +146,6 @@ public class EntityRelated {
         }
     }
 
-    private static int counter = 0;
-
-    @SubscribeEvent
-    public static void applyGlowing(TickEvent.ServerTickEvent e) {
-        if (e.phase == TickEvent.Phase.END) {
-            boolean check = false;
-            if (counter == 600) {
-                counter = 0;
-                check = true;
-            } else {
-                counter++;
-            }
-            if (check) {
-                MinecraftServer minecraftServer = ServerLifecycleHooks.getCurrentServer();
-                List<ServerPlayerEntity> serverPlayerEntities = minecraftServer.getPlayerList().getPlayers();
-                for (ServerPlayerEntity serverPlayerEntity : serverPlayerEntities) {
-                    if (serverPlayerEntity.isAlive()) {
-                        serverPlayerEntity.setGlowing(true);
-                    }
-                }
-            }
-        }
-    }
-
     @SubscribeEvent
     public static void disableBoneMeal(BonemealEvent e) {
         if (e.getEntityLiving() instanceof PlayerEntity) {
@@ -207,12 +180,13 @@ public class EntityRelated {
                         serverPlayerEntity.addStat(Stats.ITEM_USED.get(Items.TOTEM_OF_UNDYING));
                         CriteriaTriggers.USED_TOTEM.trigger(serverPlayerEntity, totemStack);
                     }
-                    float a = player.getMaxHealth() * 0.7f;
+                    float a = player.getMaxHealth() * 0.75f;
                     player.setHealth(a);
                     player.sendMessage(new StringTextComponent( TextFormatting.BOLD + "" + TextFormatting.RED + "불사의 토템이 사용되었습니다."));
                     totemStack.shrink(1);
                     Util.playSound(player.world, player, SoundEvents.ITEM_TOTEM_USE);
                     player.world.setEntityState(player, (byte)35);
+                    player.hurtResistantTime = 40;
                 }
             }
         }
@@ -267,24 +241,6 @@ public class EntityRelated {
                 return;
             }
             e.setCanceled(true);
-        }
-    }
-
-    private static int levelTickCount = 0;
-    @SubscribeEvent
-    public static void playerTick(TickEvent.PlayerTickEvent e) {
-        if (e.side == LogicalSide.SERVER && e.phase == TickEvent.Phase.END) {
-            boolean check = false;
-            if (levelTickCount == 300) {
-                levelTickCount = 0;
-                check = true;
-            } else {
-                levelTickCount++;
-            }
-            if (check) {
-                PlayerEntity player = e.player;
-                player.refreshDisplayName();
-            }
         }
     }
 
