@@ -225,7 +225,6 @@ public class EntityRelated {
                         double y = location.getY() + 0.15;
                         double z = location.getZ() + 0.5;
                         minecraftServer.getCommandManager().handleCommand(minecraftServer.getCommandSource(), "/execute in minecraft:overworld run tp " + player.getName().getString() + " " + x + " " + y + " " + z);
-                        return;
                     }
                 }
             }
