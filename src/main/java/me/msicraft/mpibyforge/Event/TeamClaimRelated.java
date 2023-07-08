@@ -38,6 +38,10 @@ public class TeamClaimRelated {
         allTeamChunks.addAll(chunkPosList);
     }
 
+    public static boolean hasTeam(String teamName) {
+        return teamClaimMap.containsKey(teamName);
+    }
+
     public static void setTeamClaimToMap(String teamName, List<ChunkPos> chunkPosList) {
         teamClaimMap.put(teamName, chunkPosList);
         updateAllTeamChunks(chunkPosList);
