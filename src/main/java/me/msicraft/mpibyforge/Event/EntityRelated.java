@@ -133,11 +133,11 @@ public class EntityRelated {
         }
     }
 
-    private static final List<DamageSource> ignoredDamageSources = Arrays.asList(DamageSource.DROWN, DamageSource.LAVA, DamageSource.HOT_FLOOR,
-            DamageSource.STARVE, DamageSource.WITHER, DamageSource.SWEET_BERRY_BUSH, DamageSource.CACTUS, DamageSource.CRAMMING,
-            DamageSource.IN_FIRE, DamageSource.IN_WALL, DamageSource.ON_FIRE);
+    private static final List<DamageSource> ignoredDamageSources = Arrays.asList(DamageSource.DROWN, DamageSource.HOT_FLOOR,
+            DamageSource.STARVE, DamageSource.WITHER, DamageSource.SWEET_BERRY_BUSH, DamageSource.CACTUS, DamageSource.CRAMMING, DamageSource.IN_WALL,
+            DamageSource.LAVA, DamageSource.ON_FIRE, DamageSource.IN_FIRE);
 
-    @SubscribeEvent(priority = EventPriority.LOW)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void changeNoDamageTick(LivingHurtEvent e) {
         LivingEntity livingEntity = e.getEntityLiving();
         DamageSource damageSource = e.getSource();
@@ -153,7 +153,7 @@ public class EntityRelated {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void inventoryTotemOfUndying(LivingDeathEvent e) {
         if (e.getSource() != DamageSource.OUT_OF_WORLD) {
             LivingEntity livingEntity = e.getEntityLiving();
@@ -186,7 +186,7 @@ public class EntityRelated {
                     totemStack.shrink(1);
                     Util.playSound(player.world, player, SoundEvents.ITEM_TOTEM_USE);
                     player.world.setEntityState(player, (byte)35);
-                    player.hurtResistantTime = 40;
+                    player.hurtResistantTime = 80;
                 }
             }
         }
@@ -216,8 +216,15 @@ public class EntityRelated {
         if (player != null) {
             MinecraftServer minecraftServer = player.getServer();
             if (minecraftServer != null) {
+                boolean check = false;
                 BlockPos blockPos = player.getBedLocation(DimensionType.OVERWORLD);
                 if (blockPos == null) {
+                    check = true;
+                }
+                if (player.world.getDimension().getType() != DimensionType.OVERWORLD) {
+                    check = true;
+                }
+                if (check) {
                     String teamName = TeamSpawn.getTeamName(player);
                     Location location = getTeamSpawnLocation(teamName);
                     if (teamName != null && location != null) {
@@ -241,19 +248,6 @@ public class EntityRelated {
             }
             e.setCanceled(true);
         }
-    }
-
-    @SubscribeEvent
-    public static void changeDisplayName(PlayerEvent.NameFormat e) {
-        PlayerEntity player = e.getPlayer();
-        int level = Load.Unit(player).getLevel();
-        ResourceLocation resourceLocation = player.getEntityWorld().getDimension().getType().getRegistryName();
-        String dimensionName = "Unknown";
-        if (resourceLocation != null) {
-            dimensionName = resourceLocation.getPath();
-        }
-        String s = TextFormatting.GRAY + "[" + dimensionName + "]" + "[" + level + "] " + TextFormatting.WHITE + player.getName().getString();
-        e.setDisplaynameComponent(new StringTextComponent(s));
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
