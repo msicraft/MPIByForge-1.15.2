@@ -31,8 +31,8 @@ public class TeamInfo {
             if (team != null) {
                 int totalSize = team.getMembershipCollection().size();
                 List<String> teamMembers = new ArrayList<>(team.getMembershipCollection());
-                commandSource.sendFeedback(new StringTextComponent("총 " + TextFormatting.GREEN + totalSize + TextFormatting.WHITE + " 명의 팀 구성원이 존재합니다."), false);
-                commandSource.sendFeedback(new StringTextComponent("팀 구성원: " + teamMembers), false);
+                player.sendMessage(new StringTextComponent("총 " + TextFormatting.GREEN + totalSize + TextFormatting.WHITE + " 명의 팀 구성원이 존재합니다."));
+                player.sendMessage(new StringTextComponent("팀 구성원: " + teamMembers));
             } else {
                 commandSource.sendFeedback(new StringTextComponent(TextFormatting.RED + "팀이 존재하지 않습니다."), false);
             }
@@ -48,8 +48,14 @@ public class TeamInfo {
             ScorePlayerTeam scorePlayerTeam = minecraftServer.getScoreboard().getTeam(teamName);
             int totalSize = scorePlayerTeam.getMembershipCollection().size();
             List<String> teamMembers = new ArrayList<>(scorePlayerTeam.getMembershipCollection());
-            commandSource.sendFeedback(new StringTextComponent("총 " + TextFormatting.GREEN + totalSize + TextFormatting.WHITE + " 명의 팀 구성원이 존재합니다."), false);
-            commandSource.sendFeedback(new StringTextComponent("팀 구성원: " + teamMembers), false);
+            if (commandSource.getEntity() instanceof PlayerEntity) {
+                PlayerEntity player = (PlayerEntity) commandSource.getEntity();
+                player.sendMessage(new StringTextComponent("총 " + TextFormatting.GREEN + totalSize + TextFormatting.WHITE + " 명의 팀 구성원이 존재합니다."));
+                player.sendMessage(new StringTextComponent("팀 구성원: " + teamMembers));
+            } else {
+                commandSource.sendFeedback(new StringTextComponent("총 " + TextFormatting.GREEN + totalSize + TextFormatting.WHITE + " 명의 팀 구성원이 존재합니다."), false);
+                commandSource.sendFeedback(new StringTextComponent("팀 구성원: " + teamMembers), false);
+            }
         } else {
             commandSource.sendFeedback(new StringTextComponent("존재 하지 않는 팀 입니다."), false);
         }
