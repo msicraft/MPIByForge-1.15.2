@@ -17,6 +17,8 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -30,14 +32,17 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -321,6 +326,36 @@ public class EntityRelated {
             return;
         }
         e.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void disableLibrarianTrade(PlayerInteractEvent.EntityInteractSpecific e) {
+        if (e.getTarget() instanceof VillagerEntity) {
+            VillagerEntity villagerEntity = (VillagerEntity) e.getTarget();
+            if (villagerEntity.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+                villagerEntity.setVillagerData(Util.getNitWitVillagerData(villagerEntity.getVillagerData().getType()));
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void disableLibrarianTrade2(EntityJoinWorldEvent e) {
+        if (e.getEntity() instanceof VillagerEntity) {
+            VillagerEntity villagerEntity = (VillagerEntity) e.getEntity();
+            if (villagerEntity.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+                villagerEntity.setVillagerData(Util.getNitWitVillagerData(villagerEntity.getVillagerData().getType()));
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void disableLibrarianTrade3(LivingSpawnEvent e) {
+        if (e.getEntity() instanceof VillagerEntity) {
+            VillagerEntity villagerEntity = (VillagerEntity) e.getEntity();
+            if (villagerEntity.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+                villagerEntity.setVillagerData(Util.getNitWitVillagerData(villagerEntity.getVillagerData().getType()));
+            }
+        }
     }
 
 }

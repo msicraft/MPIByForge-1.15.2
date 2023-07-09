@@ -1,7 +1,10 @@
 package me.msicraft.mpibyforge.Util;
 
+import net.minecraft.entity.merchant.villager.VillagerData;
+import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.villager.IVillagerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -34,6 +37,10 @@ public class Util {
         } else {
             world.playSound(null, player.getPosition(), soundEvent, SoundCategory.PLAYERS, 0.5F, 1);
         }
+    }
+
+    public static VillagerData getNitWitVillagerData(IVillagerType iVillagerType) {
+        return new VillagerData(iVillagerType, VillagerProfession.NITWIT, 1);
     }
 
 }
