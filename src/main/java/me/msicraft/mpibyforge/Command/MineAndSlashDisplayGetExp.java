@@ -23,7 +23,7 @@ public class MineAndSlashDisplayGetExp {
                 player.sendMessage(new StringTextComponent(TextFormatting.RED + "획득 경험치 표시가 비 활성화 되었습니다"));
             } else {
                 player.addTag(tag);
-                player.sendMessage(new StringTextComponent(TextFormatting.GREEN + "획득 경험치 표시가 활성화 되었습니다.(정확한 값이 아닌 대략적인 값이 표시됩니다.)"));
+                player.sendMessage(new StringTextComponent(TextFormatting.GREEN + "획득 경험치 표시가 활성화 되었습니다. (정확한 값이 아닌 대략적인 값이 표시됩니다.)"));
             }
         }
         return 0;

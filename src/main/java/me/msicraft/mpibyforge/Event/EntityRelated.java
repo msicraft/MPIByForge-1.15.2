@@ -365,7 +365,8 @@ public class EntityRelated {
                 int exp = e.experience;
                 String expFormat = NumberUtils.formatNumber(exp);
                 String deathEntity = e.entityKilled.getType().getTranslationKey();
-                player.sendMessage(new StringTextComponent("Entity: " + deathEntity + " | " + TextFormatting.GREEN + "" + TextFormatting.BOLD + " + " + expFormat));
+                player.sendMessage(new StringTextComponent(TextFormatting.GRAY + deathEntity + TextFormatting.WHITE + " |"
+                        + TextFormatting.GREEN + "" + TextFormatting.BOLD + " + " + expFormat));
             }
         }
     }
