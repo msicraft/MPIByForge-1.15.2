@@ -8,6 +8,7 @@ import com.robertx22.mine_and_slash.uncommon.capability.world.AntiMobFarmCap;
 import com.robertx22.mine_and_slash.uncommon.datasaving.Load;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
+import me.msicraft.mpibyforge.DataFile.PumpkinJuiceLogDataFile;
 import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
 import me.msicraft.mpibyforge.MPIByForge;
 import me.msicraft.mpibyforge.Util.MineAndSlashUtil;
@@ -26,6 +27,7 @@ import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
@@ -317,6 +319,21 @@ public class EntityRelated {
                                 ItemEntity item = new ItemEntity(player.world, blockPos.getX(), (blockPos.getY()+0.25), blockPos.getZ(), itemStack);
                                 item.setLocationAndAngles(blockPos.getX(), blockPos.getY()+0.25, blockPos.getZ(), 0.0F, 0.0F);
                                 check = player.world.addEntity(item);
+                                ResourceLocation resourceLocation = player.world.getDimension().getType().getRegistryName();
+                                String dimensionS = "Unknown";
+                                if (resourceLocation != null) {
+                                    dimensionS = resourceLocation.getPath();
+                                }
+                                String log = "[" + Util.getDateByFormat("yyyy/MM/dd") + " - " + Util.getTimeByFormat("HH시 mm분 ss초") + "] " +
+                                        "드랍정보-> 월드: " + dimensionS + " | 엔티티: " + mobKilled.getType().getTranslationKey() + "/" + mobLevel +
+                                        " | 플레이어: " + player.getName().getString() + "/" + playerLevel + " | 레벨차이: " + absLevelValue +
+                                        " | LootMulti:" + loot_multi + " | 확률: " + getPumpkinJuiceDropRate() +
+                                        " | 랜덤확률: " + randomP + " | 레벨범위: " + getPumpkinJuiceDropLevelRange();
+                                if (PumpkinJuiceLogDataFile.addLog(log)) {
+                                    MPIByForge.getLogger().info("성공적으로 호박주스 로그가 저장되었습니다");
+                                } else {
+                                    MPIByForge.getLogger().info("호박주스 로그가 저장되지 않았습니다");
+                                }
                             }
                             if (developerPlayer != null) {
                                 developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString()));

@@ -10,7 +10,33 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 public class Util {
+
+    public static String getDateByFormat(String pattern) {
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        try {
+            formatter = DateTimeFormatter.ofPattern(pattern);
+        } catch (IllegalArgumentException e) {
+            //
+        }
+        return now.format(formatter);
+    }
+
+    public static String getTimeByFormat(String pattern) {
+        LocalTime now = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH시 mm분 ss초");
+        try {
+            formatter = DateTimeFormatter.ofPattern(pattern);
+        } catch (IllegalArgumentException e) {
+            //
+        }
+        return now.format(formatter);
+    }
 
     public static ServerPlayerEntity getDeveloperPlayer(MinecraftServer minecraftServer) {
         ServerPlayerEntity player = null;
