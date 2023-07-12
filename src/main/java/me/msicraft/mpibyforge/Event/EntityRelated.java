@@ -1,11 +1,14 @@
 package me.msicraft.mpibyforge.Event;
 
+import com.robertx22.mine_and_slash.api.MineAndSlashEvents;
 import com.robertx22.mine_and_slash.config.whole_mod_entity_configs.ModEntityConfig;
 import com.robertx22.mine_and_slash.mmorpg.registers.common.CriteriaRegisters;
 import com.robertx22.mine_and_slash.registry.SlashRegistry;
 import com.robertx22.mine_and_slash.uncommon.capability.entity.EntityCap;
 import com.robertx22.mine_and_slash.uncommon.capability.world.AntiMobFarmCap;
 import com.robertx22.mine_and_slash.uncommon.datasaving.Load;
+import com.robertx22.mine_and_slash.uncommon.utilityclasses.NumberUtils;
+import me.msicraft.mpibyforge.Command.MineAndSlashDisplayGetExp;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
 import me.msicraft.mpibyforge.Config.ServerConfig;
 import me.msicraft.mpibyforge.DataFile.PumpkinJuiceLogDataFile;
@@ -45,6 +48,7 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -349,6 +353,19 @@ public class EntityRelated {
             VillagerEntity villagerEntity = (VillagerEntity) e.getEntity();
             if (villagerEntity.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
                 villagerEntity.setVillagerData(Util.getNitWitVillagerData(villagerEntity.getVillagerData().getType()));
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void displayGetExp(MineAndSlashEvents.GiveExpEvent e) {
+        if (e.getResult() == Event.Result.ALLOW) {
+            PlayerEntity player = e.player;
+            if (MineAndSlashDisplayGetExp.hasTag(player)) {
+                int exp = e.experience;
+                String expFormat = NumberUtils.formatNumber(exp);
+                String deathEntity = e.entityKilled.getType().getTranslationKey();
+                player.sendMessage(new StringTextComponent("Entity: " + deathEntity + " | " + TextFormatting.GREEN + "" + TextFormatting.BOLD + " + " + expFormat));
             }
         }
     }

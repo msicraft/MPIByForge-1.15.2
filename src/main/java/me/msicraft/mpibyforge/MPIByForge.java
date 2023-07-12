@@ -61,6 +61,7 @@ public class MPIByForge {
         MainWorldSpawn.register(commandDispatcher);
         PumpkinJuiceDrop.register(commandDispatcher);
         TeamInfo.register(commandDispatcher);
+        MineAndSlashDisplayGetExp.register(commandDispatcher);
 
         EntityRelated.setVariables(minecraftServer);
         TeamClaimRelated.setVariables(minecraftServer);
