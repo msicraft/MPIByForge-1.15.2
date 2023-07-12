@@ -138,7 +138,7 @@ public class EntityRelated {
         MPIByForge.fileConfig.set("PumpkinJuiceDropLevelRange", getPumpkinJuiceDropLevelRange());
         MPIByForge.getLogger().info("PumpkinJuiceDropLevelRange Save: " + getPumpkinJuiceDropLevelRange());
         MPIByForge.fileConfig.save();
-        MPIByForge.fileConfig.close();
+        //MPIByForge.fileConfig.close();
         for (String teamName : teamSpawnMap.keySet()) {
             Location location = teamSpawnMap.get(teamName);
             if (location != null) {
