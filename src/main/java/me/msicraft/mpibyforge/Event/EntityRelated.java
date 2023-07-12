@@ -60,7 +60,7 @@ public class EntityRelated {
     private static int noDamageTick = 20;
     private static float minAttackPower = 0;
     private static double pumpkinJuiceDropRate = 0.00001;
-    private static int pumpkinJuiceDropLevelRange = 10;
+    private static int pumpkinJuiceDropLevelRange = 5;
 
     private static final Map<String, Location> teamSpawnMap = new HashMap<>();
 
@@ -77,6 +77,11 @@ public class EntityRelated {
     public static float getMinAttackPower() { return minAttackPower; }
     public static double getPumpkinJuiceDropRate() { return pumpkinJuiceDropRate; }
     public static int getPumpkinJuiceDropLevelRange() { return pumpkinJuiceDropLevelRange; }
+
+    public static void setNoDamageTick(int tick) { noDamageTick = tick; }
+    public static void setMinAttackPower(double attackPower) { minAttackPower = (float) attackPower; }
+    public static void setPumpkinJuiceDropRate(double dropRate) { pumpkinJuiceDropRate = dropRate; }
+    public static void setPumpkinJuiceDropLevelRange(int range) { pumpkinJuiceDropLevelRange = range; }
 
     public static void setVariables(MinecraftServer minecraftServer) {
         setNoDamageTick(ServerConfig.NODAMAGETICK.get());
@@ -96,49 +101,13 @@ public class EntityRelated {
         }
     }
 
-    public static void setNoDamageTick(int tick) {
-        if (tick < 0) {
-            tick = 0;
-        }
-        noDamageTick = tick;
-    }
-
-    public static void setMinAttackPower(double attackPower) {
-        if (attackPower < 0) {
-            attackPower = 0;
-        }
-        minAttackPower = (float) attackPower;
-    }
-
-    public static void setPumpkinJuiceDropRate(double dropRate) {
-        if (dropRate < 0) {
-            dropRate = 0;
-        }
-        pumpkinJuiceDropRate = dropRate;
-    }
-
-    public static void setPumpkinJuiceDropLevelRange(int range) {
-        if (range < 0) {
-            range = 0;
-        }
-        pumpkinJuiceDropLevelRange = range;
-    }
-
     public static void saveToConfig() {
-        MPIByForge.fileConfig.load();
-        MPIByForge.fileConfig.set("NoDamageTick", getNoDamageTick());
-        MPIByForge.getLogger().info("NoDamageTick Save: " + getNoDamageTick());
-        MPIByForge.fileConfig.save();
-        MPIByForge.fileConfig.set("MinAttackPower", getMinAttackPower());
-        MPIByForge.getLogger().info("MinAttackPower Save: " + getMinAttackPower());
-        MPIByForge.fileConfig.save();
-        MPIByForge.fileConfig.set("PumpkinJuiceDropRate", getPumpkinJuiceDropRate());
-        MPIByForge.getLogger().info("PumpkinJuiceDropRate Save: " + getPumpkinJuiceDropRate());
-        MPIByForge.fileConfig.save();
-        MPIByForge.fileConfig.set("PumpkinJuiceDropLevelRange", getPumpkinJuiceDropLevelRange());
-        MPIByForge.getLogger().info("PumpkinJuiceDropLevelRange Save: " + getPumpkinJuiceDropLevelRange());
-        MPIByForge.fileConfig.save();
-        //MPIByForge.fileConfig.close();
+        Map<String, Object> valuesMap = new HashMap<>();
+        valuesMap.put("NoDamageTick", noDamageTick);
+        valuesMap.put("MinAttackPower", minAttackPower);
+        valuesMap.put("PumpkinJuiceDropRate", pumpkinJuiceDropRate);
+        valuesMap.put("PumpkinJuiceDropLevelRange", pumpkinJuiceDropLevelRange);
+        Util.saveFileConfig(valuesMap);
         for (String teamName : teamSpawnMap.keySet()) {
             Location location = teamSpawnMap.get(teamName);
             if (location != null) {

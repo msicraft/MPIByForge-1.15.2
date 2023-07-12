@@ -1,5 +1,6 @@
 package me.msicraft.mpibyforge.Util;
 
+import me.msicraft.mpibyforge.MPIByForge;
 import net.minecraft.entity.merchant.villager.VillagerData;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,6 +14,7 @@ import net.minecraft.world.World;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 public class Util {
 
@@ -67,6 +69,16 @@ public class Util {
 
     public static VillagerData getNitWitVillagerData(IVillagerType iVillagerType) {
         return new VillagerData(iVillagerType, VillagerProfession.NITWIT, 1);
+    }
+
+    public static void saveFileConfig(Map<String, Object> valuesMap) {
+        MPIByForge.fileConfig.load();
+        for (String s : valuesMap.keySet()) {
+            Object o = valuesMap.get(s);
+            MPIByForge.fileConfig.set(s, o);
+            MPIByForge.fileConfig.save();
+        }
+        MPIByForge.fileConfig.close();
     }
 
 }
