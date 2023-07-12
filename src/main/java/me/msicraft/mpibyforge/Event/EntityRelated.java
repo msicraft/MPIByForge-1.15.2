@@ -78,9 +78,13 @@ public class EntityRelated {
 
     public static void setVariables(MinecraftServer minecraftServer) {
         setNoDamageTick(ServerConfig.NODAMAGETICK.get());
+        MPIByForge.getLogger().info("NoDamageTick Load: " + ServerConfig.NODAMAGETICK.get());
         setMinAttackPower(ServerConfig.MINATTACKPOWER.get());
+        MPIByForge.getLogger().info("MinAttackPower Load: " + ServerConfig.MINATTACKPOWER.get());
         setPumpkinJuiceDropRate(ServerConfig.PUMPKINJUICEDROPRATE.get());
+        MPIByForge.getLogger().info("PumpkinJuiceDropRate Load: " + ServerConfig.PUMPKINJUICEDROPRATE.get());
         setPumpkinJuiceDropLevelRange(ServerConfig.PUMPKINJUICEDROPLEVELRANGE.get());
+        MPIByForge.getLogger().info("PumpkinJuiceDropLevelRange Load: " + ServerConfig.PUMPKINJUICEDROPLEVELRANGE.get());
         for (String teamName : minecraftServer.getScoreboard().getTeamNames()) {
             Location location = TeamSpawnDataFile.getTeamSpawnLocation(teamName);
             if (location != null) {
@@ -121,13 +125,18 @@ public class EntityRelated {
     public static void saveToConfig() {
         MPIByForge.fileConfig.load();
         MPIByForge.fileConfig.set("NoDamageTick", getNoDamageTick());
+        MPIByForge.getLogger().info("NoDamageTick Save: " + getNoDamageTick());
         MPIByForge.fileConfig.save();
         MPIByForge.fileConfig.set("MinAttackPower", getMinAttackPower());
+        MPIByForge.getLogger().info("MinAttackPower Save: " + getMinAttackPower());
         MPIByForge.fileConfig.save();
         MPIByForge.fileConfig.set("PumpkinJuiceDropRate", getPumpkinJuiceDropRate());
+        MPIByForge.getLogger().info("PumpkinJuiceDropRate Save: " + getPumpkinJuiceDropRate());
         MPIByForge.fileConfig.save();
         MPIByForge.fileConfig.set("PumpkinJuiceDropLevelRange", getPumpkinJuiceDropLevelRange());
+        MPIByForge.getLogger().info("PumpkinJuiceDropLevelRange Save: " + getPumpkinJuiceDropLevelRange());
         MPIByForge.fileConfig.save();
+        MPIByForge.fileConfig.close();
         for (String teamName : teamSpawnMap.keySet()) {
             Location location = teamSpawnMap.get(teamName);
             if (location != null) {
