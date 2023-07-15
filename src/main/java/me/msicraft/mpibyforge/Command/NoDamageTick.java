@@ -6,6 +6,7 @@ import me.msicraft.mpibyforge.Event.EntityRelated;
 import me.msicraft.mpibyforge.MPIByForge;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.StringTextComponent;
 
 public class NoDamageTick {
@@ -15,10 +16,7 @@ public class NoDamageTick {
                 .then(Commands.literal("nodamagetick").then(Commands.argument("tick", IntegerArgumentType.integer())
                         .executes(command -> setNoDamageTick(command.getSource(), IntegerArgumentType.getInteger(command, "tick"))))));
         dispatcher.register(Commands.literal("mpi").requires(cs -> cs.hasPermissionLevel(4))
-                .then(Commands.literal("nodamagetick").executes(command -> {
-                    command.getSource().sendFeedback(new StringTextComponent("현재 NoDamageTick 값: " + EntityRelated.getNoDamageTick()), false);
-                    return 1;
-                })));
+                .then(Commands.literal("nodamagetick").executes(command -> getNoDamageTick(command.getSource()))));
     }
 
     private static int setNoDamageTick(CommandSource commandSource, int tick) {
@@ -28,6 +26,16 @@ public class NoDamageTick {
         }
         MPIByForge.getLogger().info("NoDamageTick 값이 변경되었습니다. " + EntityRelated.getNoDamageTick() + " -> " + tick);
         EntityRelated.setNoDamageTick(tick);
+        return 1;
+    }
+
+    private static int getNoDamageTick(CommandSource commandSource) {
+        if (commandSource.getEntity() instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) commandSource.getEntity();
+            player.sendMessage(new StringTextComponent("현재 NoDamageTick 값: " + EntityRelated.getNoDamageTick()));
+        } else {
+            commandSource.sendFeedback(new StringTextComponent("현재 NoDamageTick 값: " + EntityRelated.getNoDamageTick()), false);
+        }
         return 1;
     }
 
