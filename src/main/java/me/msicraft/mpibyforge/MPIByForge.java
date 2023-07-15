@@ -3,7 +3,7 @@ package me.msicraft.mpibyforge;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import me.msicraft.mpibyforge.Command.*;
-import me.msicraft.mpibyforge.Config.ServerConfig;
+import me.msicraft.mpibyforge.DataFile.ConfigDataFile;
 import me.msicraft.mpibyforge.Event.EntityRelated;
 import me.msicraft.mpibyforge.Event.TeamClaimRelated;
 import me.msicraft.mpibyforge.Event.TickRelated;
@@ -13,9 +13,7 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.ServerProperties;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
@@ -48,7 +46,7 @@ public class MPIByForge {
         MinecraftForge.EVENT_BUS.register(TeamClaimRelated.class);
         MinecraftForge.EVENT_BUS.register(TickRelated.class);
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, "mpibyforge-server.toml");
+        //ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, "mpibyforge-server.toml");
     }
 
     @SubscribeEvent
@@ -63,6 +61,8 @@ public class MPIByForge {
         TeamInfo.register(commandDispatcher);
         MineAndSlashDisplayGetExp.register(commandDispatcher);
 
+        ConfigDataFile.setUp();
+
         EntityRelated.setVariables(minecraftServer);
         TeamClaimRelated.setVariables(minecraftServer);
         LOGGER.info("MPIByForge Enabled");
@@ -72,6 +72,8 @@ public class MPIByForge {
     public void onServerStopping(FMLServerStoppingEvent event) {
         EntityRelated.saveToConfig();
         TeamClaimRelated.saveToConfig();
+
+        ConfigDataFile.saveMapToFile();
         LOGGER.info("MPIByForge Disabled");
     }
 

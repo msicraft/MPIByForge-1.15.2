@@ -10,7 +10,7 @@ import com.robertx22.mine_and_slash.uncommon.datasaving.Load;
 import com.robertx22.mine_and_slash.uncommon.utilityclasses.NumberUtils;
 import me.msicraft.mpibyforge.Command.MineAndSlashDisplayGetExp;
 import me.msicraft.mpibyforge.Command.TeamSpawn;
-import me.msicraft.mpibyforge.Config.ServerConfig;
+import me.msicraft.mpibyforge.DataFile.ConfigDataFile;
 import me.msicraft.mpibyforge.DataFile.PumpkinJuiceLogDataFile;
 import me.msicraft.mpibyforge.DataFile.TeamSpawnDataFile;
 import me.msicraft.mpibyforge.MPIByForge;
@@ -63,7 +63,7 @@ public class EntityRelated {
 
     private static int noDamageTick = 20;
     private static float minAttackPower = 0;
-    private static double pumpkinJuiceDropRate = 0.00001;
+    private static double pumpkinJuiceDropRate = 0.0001;
     private static int pumpkinJuiceDropLevelRange = 5;
 
     private static final Map<String, Location> teamSpawnMap = new HashMap<>();
@@ -82,20 +82,36 @@ public class EntityRelated {
     public static double getPumpkinJuiceDropRate() { return pumpkinJuiceDropRate; }
     public static int getPumpkinJuiceDropLevelRange() { return pumpkinJuiceDropLevelRange; }
 
-    public static void setNoDamageTick(int tick) { noDamageTick = tick; }
-    public static void setMinAttackPower(double attackPower) { minAttackPower = (float) attackPower; }
-    public static void setPumpkinJuiceDropRate(double dropRate) { pumpkinJuiceDropRate = dropRate; }
-    public static void setPumpkinJuiceDropLevelRange(int range) { pumpkinJuiceDropLevelRange = range; }
+    public static void setNoDamageTick(int tick) {
+        noDamageTick = tick;
+        ConfigDataFile.setVariableValue("NoDamageTick", tick);
+    }
+    public static void setMinAttackPower(double attackPower) {
+        minAttackPower = (float) attackPower;
+        ConfigDataFile.setVariableValue("MinAttackPower", attackPower);
+    }
+    public static void setPumpkinJuiceDropRate(double dropRate) {
+        pumpkinJuiceDropRate = dropRate;
+        ConfigDataFile.setVariableValue("PumpkinjuiceDropRate", dropRate);
+    }
+    public static void setPumpkinJuiceDropLevelRange(int range) {
+        pumpkinJuiceDropLevelRange = range;
+        ConfigDataFile.setVariableValue("PumpkinJuiceDropLevelRange", range);
+    }
 
     public static void setVariables(MinecraftServer minecraftServer) {
-        setNoDamageTick(ServerConfig.NODAMAGETICK.get());
-        MPIByForge.getLogger().info("NoDamageTick Load: " + ServerConfig.NODAMAGETICK.get());
-        setMinAttackPower(ServerConfig.MINATTACKPOWER.get());
-        MPIByForge.getLogger().info("MinAttackPower Load: " + ServerConfig.MINATTACKPOWER.get());
-        setPumpkinJuiceDropRate(ServerConfig.PUMPKINJUICEDROPRATE.get());
-        MPIByForge.getLogger().info("PumpkinJuiceDropRate Load: " + ServerConfig.PUMPKINJUICEDROPRATE.get());
-        setPumpkinJuiceDropLevelRange(ServerConfig.PUMPKINJUICEDROPLEVELRANGE.get());
-        MPIByForge.getLogger().info("PumpkinJuiceDropLevelRange Load: " + ServerConfig.PUMPKINJUICEDROPLEVELRANGE.get());
+        int noDamageTick = (int) ConfigDataFile.getVariableValue("NoDamageTick");
+        setNoDamageTick(noDamageTick);
+        MPIByForge.getLogger().info("NoDamageTick Load: " + noDamageTick);
+        double minAttackPower = (double) ConfigDataFile.getVariableValue("MinAttackPower");
+        setMinAttackPower(minAttackPower);
+        MPIByForge.getLogger().info("MinAttackPower Load: " + minAttackPower);
+        double pumpkinJuiceDropRate = (double) ConfigDataFile.getVariableValue("PumpkinjuiceDropRate");
+        setPumpkinJuiceDropRate(pumpkinJuiceDropRate);
+        MPIByForge.getLogger().info("PumpkinJuiceDropRate Load: " + pumpkinJuiceDropRate);
+        int pumpkinJuiceDropLevelRange = (int) ConfigDataFile.getVariableValue("PumpkinJuiceDropLevelRange");
+        setPumpkinJuiceDropLevelRange(pumpkinJuiceDropLevelRange);
+        MPIByForge.getLogger().info("PumpkinJuiceDropLevelRange Load: " + pumpkinJuiceDropLevelRange);
         for (String teamName : minecraftServer.getScoreboard().getTeamNames()) {
             Location location = TeamSpawnDataFile.getTeamSpawnLocation(teamName);
             if (location != null) {
@@ -106,12 +122,10 @@ public class EntityRelated {
     }
 
     public static void saveToConfig() {
-        Map<String, Object> valuesMap = new HashMap<>();
-        valuesMap.put("NoDamageTick", noDamageTick);
-        valuesMap.put("MinAttackPower", minAttackPower);
-        valuesMap.put("PumpkinJuiceDropRate", pumpkinJuiceDropRate);
-        valuesMap.put("PumpkinJuiceDropLevelRange", pumpkinJuiceDropLevelRange);
-        Util.saveFileConfig(valuesMap);
+        ConfigDataFile.setVariableValue("NoDamageTick", noDamageTick);
+        ConfigDataFile.setVariableValue("MinAttackPower", minAttackPower);
+        ConfigDataFile.setVariableValue("PumpkinjuiceDropRate", pumpkinJuiceDropRate);
+        ConfigDataFile.setVariableValue("PumpkinJuiceDropLevelRange", pumpkinJuiceDropLevelRange);
         for (String teamName : teamSpawnMap.keySet()) {
             Location location = teamSpawnMap.get(teamName);
             if (location != null) {
@@ -241,7 +255,7 @@ public class EntityRelated {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void dropPumpkinJuice(LivingDeathEvent e) {
         double randomP = Math.random();
-        if (randomP < getPumpkinJuiceDropRate()) {
+        if (randomP < pumpkinJuiceDropRate) {
             LivingEntity mobKilled = e.getEntityLiving();
             if (mobKilled.world.isRemote) {
                 return;
@@ -267,7 +281,7 @@ public class EntityRelated {
                                     developerPlayer = developerEntity;
                                 }
                             }
-                            if (absLevelValue > getPumpkinJuiceDropLevelRange()) {
+                            if (absLevelValue > pumpkinJuiceDropLevelRange) {
                                 MPIByForge.getLogger().info("레벨 페널티로인해 호박주스 드랍 실패: " + pumpkinJuiceDropRate + " | " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString());
                                 if (developerPlayer != null) {
                                     developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "레벨 페널티로인해 호박주스 드랍 실패: " + pumpkinJuiceDropRate + " | " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString()));
@@ -300,8 +314,8 @@ public class EntityRelated {
                                 String log = "[" + Util.getDateByFormat("yyyy/MM/dd") + " - " + Util.getTimeByFormat("HH시 mm분 ss초") + "] " +
                                         "드랍정보-> 월드: " + dimensionS + " | 엔티티: " + mobKilled.getType().getTranslationKey() + "/" + mobLevel +
                                         " | 플레이어: " + player.getName().getString() + "/" + playerLevel + " | 레벨차이: " + absLevelValue +
-                                        " | LootMulti:" + loot_multi + " | 확률: " + getPumpkinJuiceDropRate() +
-                                        " | 랜덤확률: " + randomP + " | 레벨범위: " + getPumpkinJuiceDropLevelRange();
+                                        " | LootMulti:" + loot_multi + " | 확률: " + pumpkinJuiceDropRate +
+                                        " | 랜덤확률: " + randomP + " | 레벨범위: " + pumpkinJuiceDropLevelRange;
                                 if (PumpkinJuiceLogDataFile.addLog(log)) {
                                     MPIByForge.getLogger().info("성공적으로 호박주스 로그가 저장되었습니다");
                                 } else {
@@ -309,9 +323,9 @@ public class EntityRelated {
                                 }
                             }
                             if (developerPlayer != null) {
-                                developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString()));
+                                developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + pumpkinJuiceDropRate + " | " + " 관련 플레이어: " + player.getName().getString()));
                             }
-                            MPIByForge.getLogger().info("호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + getPumpkinJuiceDropRate() + " | " + " 관련 플레이어: " + player.getName().getString());
+                            MPIByForge.getLogger().info("호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + pumpkinJuiceDropRate + " | " + " 관련 플레이어: " + player.getName().getString());
                         }
                     }
                 }

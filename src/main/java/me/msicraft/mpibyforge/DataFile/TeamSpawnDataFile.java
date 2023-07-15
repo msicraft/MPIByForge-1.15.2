@@ -84,6 +84,7 @@ public class TeamSpawnDataFile {
                 pos = new ChunkPos(x, z);
                 chunkPos.add(pos);
             }
+            bufferedReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
