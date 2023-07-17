@@ -255,56 +255,43 @@ public class EntityRelated {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void dropPumpkinJuice(LivingDeathEvent e) {
         double randomP = Math.random();
-        if (randomP < pumpkinJuiceDropRate) {
-            LivingEntity mobKilled = e.getEntityLiving();
-            if (mobKilled.world.isRemote) {
-                return;
-            }
-            if (!(mobKilled instanceof PlayerEntity)) {
-                ItemStack itemStack = MineAndSlashUtil.getPumpkinJuiceItemStack();
-                if (itemStack != null) {
-                    if (Load.hasUnit(mobKilled)) {
-                        EntityCap.UnitData mobKilledData = Load.Unit(mobKilled);
-                        Entity killerEntity = mobKilledData.getHighestDamageEntity(mobKilled);
-                        if (killerEntity instanceof ServerPlayerEntity) {
-                            ServerPlayerEntity player = (ServerPlayerEntity) killerEntity;
-                            EntityCap.UnitData playerData = Load.Unit(player);
+        LivingEntity mobKilled = e.getEntityLiving();
+        if (mobKilled.world.isRemote) {
+            return;
+        }
+        if (!(mobKilled instanceof PlayerEntity)) {
+            ItemStack itemStack = MineAndSlashUtil.getPumpkinJuiceItemStack();
+            if (itemStack != null) {
+                if (Load.hasUnit(mobKilled)) {
+                    EntityCap.UnitData mobKilledData = Load.Unit(mobKilled);
+                    Entity killerEntity = mobKilledData.getHighestDamageEntity(mobKilled);
+                    if (killerEntity instanceof ServerPlayerEntity) {
+                        ServerPlayerEntity player = (ServerPlayerEntity) killerEntity;
+                        EntityCap.UnitData playerData = Load.Unit(player);
 
-                            int mobLevel = mobKilledData.getLevel();
-                            int playerLevel = playerData.getLevel();
-                            int absLevelValue = Math.abs(mobLevel - playerLevel);
-                            MinecraftServer minecraftServer = player.getServer();
-                            ServerPlayerEntity developerPlayer = null;
-                            if (minecraftServer != null) {
-                                ServerPlayerEntity developerEntity = Util.getDeveloperPlayer(minecraftServer);
-                                if (developerEntity != null) {
-                                    developerPlayer = developerEntity;
-                                }
-                            }
-                            if (absLevelValue > pumpkinJuiceDropLevelRange) {
-                                MPIByForge.getLogger().info("레벨 페널티로인해 호박주스 드랍 실패: " + pumpkinJuiceDropRate + " | " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString());
-                                if (developerPlayer != null) {
-                                    developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "레벨 페널티로인해 호박주스 드랍 실패: " + pumpkinJuiceDropRate + " | " + absLevelValue + " | Mob: " + mobLevel + " | Player: " + playerLevel + " | 관련 플레이어: " + player.getName().getString()));
-                                }
-                                return;
-                            }
-                            CriteriaRegisters.DROP_LVL_PENALTY_TRIGGER.trigger(player, playerData, mobKilledData);
+                        int mobLevel = mobKilledData.getLevel();
+                        int playerLevel = playerData.getLevel();
+                        int absLevelValue = Math.abs(mobLevel - playerLevel);
+                        if (absLevelValue > pumpkinJuiceDropLevelRange) {
+                            return;
+                        }
 
-                            CriteriaRegisters.KILL_RARITY_MOB_TRIGGE.trigger(player, mobKilledData);
+                        CriteriaRegisters.DROP_LVL_PENALTY_TRIGGER.trigger(player, playerData, mobKilledData);
+                        CriteriaRegisters.KILL_RARITY_MOB_TRIGGE.trigger(player, mobKilledData);
 
-                            ModEntityConfig config = SlashRegistry.getEntityConfig(mobKilled, mobKilledData);
-
-                            float loot_multi = (float) config.LOOT_MULTI;
-
-                            if (loot_multi > 0) {
-                                player.world.getCapability(AntiMobFarmCap.Data)
-                                        .ifPresent(x -> x.onValidMobDeathByPlayer(mobKilled));
-                            }
-                            boolean check = false;
-                            if (loot_multi > 0) {
+                        ModEntityConfig config = SlashRegistry.getEntityConfig(mobKilled, mobKilledData);
+                        float loot_multi = (float) config.LOOT_MULTI;
+                        if (loot_multi > 0) {
+                            player.world.getCapability(AntiMobFarmCap.Data)
+                                    .ifPresent(x -> x.onValidMobDeathByPlayer(mobKilled));
+                        }
+                        if (loot_multi > 0) {
+                            boolean check;
+                            double calChance = pumpkinJuiceDropRate * loot_multi;
+                            if (randomP < calChance) {
                                 BlockPos blockPos = mobKilled.getPosition();
-                                ItemEntity item = new ItemEntity(player.world, blockPos.getX(), (blockPos.getY()+0.25), blockPos.getZ(), itemStack);
-                                item.setLocationAndAngles(blockPos.getX(), blockPos.getY()+0.25, blockPos.getZ(), 0.0F, 0.0F);
+                                ItemEntity item = new ItemEntity(player.world, blockPos.getX(), (blockPos.getY() + 0.25), blockPos.getZ(), itemStack);
+                                item.setLocationAndAngles(blockPos.getX(), blockPos.getY() + 0.25, blockPos.getZ(), 0.0F, 0.0F);
                                 check = player.world.addEntity(item);
                                 ResourceLocation resourceLocation = player.world.getDimension().getType().getRegistryName();
                                 String dimensionS = "Unknown";
@@ -312,20 +299,28 @@ public class EntityRelated {
                                     dimensionS = resourceLocation.getPath();
                                 }
                                 String log = "[" + Util.getDateByFormat("yyyy/MM/dd") + " - " + Util.getTimeByFormat("HH시 mm분 ss초") + "] " +
-                                        "드랍정보-> 월드: " + dimensionS + " | 엔티티: " + mobKilled.getType().getTranslationKey() + "/" + mobLevel +
+                                        "드랍정보->" + " 성공여부: " + check + " | 월드: " + dimensionS + " | 엔티티: " + mobKilled.getType().getTranslationKey() + "/" + mobLevel +
                                         " | 플레이어: " + player.getName().getString() + "/" + playerLevel + " | 레벨차이: " + absLevelValue +
                                         " | LootMulti:" + loot_multi + " | 확률: " + pumpkinJuiceDropRate +
-                                        " | 랜덤확률: " + randomP + " | 레벨범위: " + pumpkinJuiceDropLevelRange;
+                                        " | 계산된 확률: " + calChance + " | 랜덤확률: " + randomP +
+                                        " | 레벨범위: " + pumpkinJuiceDropLevelRange;
                                 if (PumpkinJuiceLogDataFile.addLog(log)) {
                                     MPIByForge.getLogger().info("성공적으로 호박주스 로그가 저장되었습니다");
                                 } else {
                                     MPIByForge.getLogger().info("호박주스 로그가 저장되지 않았습니다");
                                 }
+                                MinecraftServer minecraftServer = player.getServer();
+                                ServerPlayerEntity developerPlayer = null;
+                                if (minecraftServer != null) {
+                                    ServerPlayerEntity developerEntity = Util.getDeveloperPlayer(minecraftServer);
+                                    if (developerEntity != null) {
+                                        developerPlayer = developerEntity;
+                                    }
+                                }
+                                if (developerPlayer != null) {
+                                    developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + log));
+                                }
                             }
-                            if (developerPlayer != null) {
-                                developerPlayer.sendMessage(new StringTextComponent(TextFormatting.GREEN + "호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + pumpkinJuiceDropRate + " | " + " 관련 플레이어: " + player.getName().getString()));
-                            }
-                            MPIByForge.getLogger().info("호박 주스 드랍발생: " + check + " | " + loot_multi + " | " + pumpkinJuiceDropRate + " | " + " 관련 플레이어: " + player.getName().getString());
                         }
                     }
                 }
